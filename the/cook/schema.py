@@ -38,7 +38,8 @@ def validate_date(o):
     parsed = datetime.strptime(o, '%d.%m')
     return date(today.year, parsed.month, parsed.day)
   elif dots == 2:
-    return datetime.strptime(o, '%d.%m.%y')
+    parsed = datetime.strptime(o, '%d.%m.%y')
+    return date(parsed.year, parsed.month, parsed.day)
   else:
     raise ValueError("Cannot parse date `%s' - use dd, dd.mm or dd.mm.yy")
 

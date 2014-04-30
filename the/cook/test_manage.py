@@ -5,8 +5,11 @@
 
 from .scripts.manage import main
 import tempfile
+import datetime
 
 dbfile = tempfile.NamedTemporaryFile()
+today = str(datetime.date.today().day)
+tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime('%d.%m.%y')
 
 def test_init():
 
@@ -21,7 +24,7 @@ def test_add():
   cmdline = (
       '--dbfile=%s' % dbfile.name,
       'add',
-      '30',
+      tomorrow,
       'Magret de Canard et pâtes (Duck breast with pasta)',
       )
   assert main(cmdline) == 0
@@ -31,7 +34,33 @@ def test_subscribe():
   cmdline = (
       '--dbfile=%s' % dbfile.name,
       'subscribe',
-      '30',
+      )
+  assert main(cmdline) == 0
+
+def test_subscribe_tomorrow():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'subscribe',
+      tomorrow,
+      )
+  assert main(cmdline) == 0
+
+def test_subscribe_unexisting():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'subscribe',
+      '01.01.20',
+      )
+  assert main(cmdline) == 0
+
+def test_subscribe_past():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'subscribe',
+      '01.01.70',
       )
   assert main(cmdline) == 0
 
@@ -40,7 +69,7 @@ def test_subscribe_again():
   cmdline = (
       '--dbfile=%s' % dbfile.name,
       'subscribe',
-      '30',
+      tomorrow,
       )
   assert main(cmdline) == 0
 
@@ -92,6 +121,6 @@ def test_remove():
   cmdline = (
       '--dbfile=%s' % dbfile.name,
       'remove',
-      '30',
+      tomorrow,
       )
   assert main(cmdline) == 0

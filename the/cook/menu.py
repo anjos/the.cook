@@ -7,6 +7,7 @@
 
 import os
 import getpass
+import datetime
 from .models import User, Lunch, Subscription, connect
 
 def get_current_user(session, args):
@@ -51,7 +52,15 @@ def subscribe(args):
 
   session = connect(args['--dbfile'])
   user = get_current_user(session, args)
-  lunch = session.query(Lunch).filter(Lunch.date == args['<date>']).first()
+  today = datetime.date.today()
+  if args['<date>'] is None or args['<date>'] <= today:
+    date = datetime.datetime(today.year, today.month, today.day, 18)
+  else:
+    date = args['<date>']
+  lunch = session.query(Lunch).filter(Lunch.date >= date).order_by(Lunch.date).first()
+  if lunch is None:
+    print("Cannot find lunch with open subscription for the input date (%s)" % args['<date>'].strftime('%A, %d/%m/%Y'))
+    return
   subscribed = session.query(Subscription).filter(
       Subscription.lunch_id == lunch.id,
       Subscription.user_id == user.id

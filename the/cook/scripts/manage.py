@@ -10,7 +10,7 @@ Usage:
   %(prog)s [--dbfile=<s>] add <date> <menu>
   %(prog)s [--dbfile=<s>] remove <date>
   %(prog)s [--dbfile=<s>] list [-s|-l] [<range>]
-  %(prog)s [--dbfile=<s>] subscribe <date> [--persons=<n>]
+  %(prog)s [--dbfile=<s>] subscribe [<date>] [--persons=<n>]
   %(prog)s [--dbfile=<s>] reminder [<email>]
   %(prog)s [--dbfile=<s>] report [<email>]
   %(prog)s [--dbfile=<s>] call [--dry-run|-n]
