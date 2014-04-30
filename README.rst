@@ -37,7 +37,6 @@ Usage is pretty simple. Here is what you can do with the ``lunch`` command line
 utility:
 
   * List next available menus (``show``)
-  * List past meals for statistics (``stats``)
   * Subscribe for lunch (``sub``)
   * Unsubscribe for lunch (``unsub``)
 
@@ -46,9 +45,11 @@ the available menus, sending reminders for lunch subscriptions and other
 management tasks:
 
   * Add a new menu for a specific date (``add``)
+  * Remove a menu for a specific date (``remove``)
+  * List past subscriptions and menus (``list``)
   * Send a reminder for subscription (``reminder``)
   * Send a PDF report to the Vatel Restaurant (``report``)
-  * Send a call for the day lunch (``call``)
+  * Send a call for subscribers of the day lunch (``call``)
 
 You can use the flag ``--help`` on both utilities to see more options.
 

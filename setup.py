@@ -22,8 +22,9 @@ setup(
 
     install_requires=[
       'setuptools',
+      'docopt',
+      'schema',
       'sqlalchemy',
-      'reportlab',
     ],
 
     namespace_packages=[
@@ -33,6 +34,7 @@ setup(
     entry_points={
       'console_scripts': [
         'lunch = the.cook.scripts.lunch:main',
+        'manage = the.cook.scripts.manage:main',
         ],
       },
 
