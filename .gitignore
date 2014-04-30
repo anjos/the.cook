@@ -1,0 +1,17 @@
+*~
+*.swp
+*.pyc
+*.so
+bin
+eggs
+parts
+.installed.cfg
+.mr.developer.cfg
+*.egg-info
+develop-eggs
+sphinx
+dist
+.nfs*
+build
+*.egg
+src/
