@@ -10,6 +10,7 @@ import datetime
 dbfile = tempfile.NamedTemporaryFile()
 today = str(datetime.date.today().day)
 tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime('%d.%m.%y')
+in3days = (datetime.date.today() + datetime.timedelta(days=3)).strftime('%d.%m.%y')
 
 def test_init():
 
@@ -122,5 +123,40 @@ def test_remove():
       '--dbfile=%s' % dbfile.name,
       'remove',
       tomorrow,
+      )
+  assert main(cmdline) == 0
+
+def test_add_in3days():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'add',
+      in3days,
+      'Magret de Canard et pâtes (Duck breast with pasta)',
+      )
+  assert main(cmdline) == 0
+
+def test_reminder_fails():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'reminder',
+      )
+  assert main(cmdline) == 0
+
+def test_report_in3days():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'report',
+      )
+  assert main(cmdline) == 0
+
+def test_remove_in3days():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'remove',
+      in3days,
       )
   assert main(cmdline) == 0

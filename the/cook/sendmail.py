@@ -20,7 +20,10 @@ def reminder(args):
   path = os.path.dirname(sys.argv[0])
   session.close()
 
-  # TODO: If next_lunch not tomorrow, abort
+  tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+  if (next_lunch.date != tomorrow):
+    print("There is no lunch scheduled for tomorrow, %s" % tomorrow.strftime("%A, %d/%m/%Y"))
+    return
 
   message = [
       "Hello, next %s, the Vatel Restaurant will organise" % next_lunch.date.strftime("%A, %d/%m/%y"),
@@ -66,7 +69,10 @@ def report(args):
   user = get_current_user(session, args)
   path = os.path.dirname(sys.argv[0])
 
-  # TODO: If next_lunch not tomorrow, abort
+  tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+  if (next_lunch.date != tomorrow):
+    print("There is no lunch scheduled for tomorrow, %s" % tomorrow.strftime("%A, %d/%m/%Y"))
+    return
 
   message = [
       "Menu proposé pour %s:" % next_lunch.date.strftime("%A, %d/%m/%Y"),
@@ -112,9 +118,8 @@ def call(args):
   user = get_current_user(session, args)
   path = os.path.dirname(sys.argv[0])
 
-  # TODO: If next_lunch not today, abort
   if (next_lunch.date != datetime.date.today()):
-    print("There is no lunch scheduled for today, %s",
+    print("There is no lunch scheduled for today, %s" %
         datetime.date.today().strftime("%A, %d/%m/%Y"))
     return
 
