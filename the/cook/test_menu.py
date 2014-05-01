@@ -22,7 +22,7 @@ in7days = datetime.date.today() + datetime.timedelta(days=7)
 in10days = datetime.date.today() + datetime.timedelta(days=10)
 
 # some fake menus
-menu_french0 = u'Gigot d\'agneau aux petits légumes'
+menu_french0 = u"Gigot d'agneau aux petits légumes"
 menu_english0 = u'Lamb with vegetables'
 menu_french1 = u'Magret de Canard et pâtes'
 menu_english1 = u'Duck breast with pasta'
