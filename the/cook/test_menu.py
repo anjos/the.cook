@@ -7,6 +7,7 @@ import datetime
 import nose.tools
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import six
 
 from .menu import add, remove, lunches_in_range, subscribe, get_current_user, lunch_at_date
 from .sendmail import reminder, report, call
@@ -22,14 +23,14 @@ in7days = datetime.date.today() + datetime.timedelta(days=7)
 in10days = datetime.date.today() + datetime.timedelta(days=10)
 
 # some fake menus
-menu_french0 = u"Gigot d'agneau aux petits légumes"
-menu_english0 = u'Lamb with vegetables'
-menu_french1 = u'Magret de Canard et pâtes'
-menu_english1 = u'Duck breast with pasta'
-menu_french2 = u'Trio de pâtes au poivrons'
-menu_english2 = u'Pasta with capsicum'
-menu_french3 = u'Risotto aux champignons'
-menu_english3 = u'Risotto with mushrooms'
+menu_french0 = six.u("Gigot d'agneau aux petits légumes")
+menu_english0 = six.u('Lamb with vegetables')
+menu_french1 = six.u('Magret de Canard et pâtes')
+menu_english1 = six.u('Duck breast with pasta')
+menu_french2 = six.u('Trio de pâtes au poivrons')
+menu_english2 = six.u('Pasta with capsicum')
+menu_french3 = six.u('Risotto aux champignons')
+menu_english3 = six.u('Risotto with mushrooms')
 
 # session fixture for tests
 session = None
