@@ -52,8 +52,7 @@ class User(Base):
     except OSError as e:
       logging.error(e)
       return '+41277217XXX'
-    name, tel = data.rsplit(' ', 1)
-    return '+41277217' + tel.strip()
+    return '+41277217' + data.split()[-1].strip()
 
   def email(self):
 
@@ -65,9 +64,8 @@ class User(Base):
       data = backquote(['tel', self.name]).split('\n')[1]
     except OSError as e:
       logging.error(e)
-      return 'Joe Doe'
-    name, tel = data.rsplit(' ', 1)
-    return name.strip()
+      return six.u('Joe Doe')
+    return as_unicode(' '.join(data.split()[:-1]).strip())
 
   def name_and_email(self):
 
@@ -78,11 +76,11 @@ class User(Base):
     return 'User("%s", %d)' % (self.name, self.id)
 
 def as_unicode(s):
-  if six.PY2 and isinstance(s, str): return s.decode('utf-8')
+  if not six.PY3 and isinstance(s, str): return s.decode('utf-8')
   return s
 
 def as_str(s):
-  if six.PY2 and not isinstance(s, str): return s.encode('utf-8')
+  if not six.PY3 and not isinstance(s, str): return s.encode('utf-8')
   return s
 
 class Lunch(Base):
