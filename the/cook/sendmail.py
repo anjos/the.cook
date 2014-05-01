@@ -39,6 +39,8 @@ def sendmail(author, to, subject, contents, cc=None):
   s.sendmail(author.name_and_email(), recipients, msg.as_string())
   s.quit()
 
+  logging.info('E-mail sent for %d recipients' % len(recipients))
+
 def call(session, address, force, cc=None):
   "Sends a reminder for lunch subscription, with the menu"
 
