@@ -79,7 +79,6 @@ def test_list_short():
   cmdline = (
       '--dbfile=%s' % dbfile.name,
       'list',
-      '--short',
       )
   assert main(cmdline) == 0
 

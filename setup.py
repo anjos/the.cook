@@ -25,6 +25,7 @@ setup(
       'docopt',
       'schema',
       'sqlalchemy',
+      'six'
     ],
 
     namespace_packages=[

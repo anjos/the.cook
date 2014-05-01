@@ -6,12 +6,15 @@
 """Models for database handling"""
 
 import os
+import logging
+import subprocess
+import datetime
+import six
+
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref, sessionmaker
-import subprocess
-import datetime
 
 Base = declarative_base()
 
@@ -19,6 +22,14 @@ def backquote(cmd):
   """Runs `cmd` and returns the answer"""
 
   return subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
+
+def format_date(date):
+  """Standard date formatting"""
+  return date.strftime("%A, %d/%m/%Y")
+
+def format_datetime(date):
+  """Standard date formatting"""
+  return date.strftime("%A, %d/%m/%Y at %H:%M")
 
 class User(Base):
   """A class that represents a unique user at Idiap"""
@@ -39,7 +50,7 @@ class User(Base):
     try:
       data = backquote(['tel', self.name]).split('\n')[1]
     except OSError as e:
-      print(e)
+      logging.error(e)
       return '+41277217XXX'
     name, tel = data.rsplit(' ', 1)
     return '+41277217' + tel.strip()
@@ -53,7 +64,7 @@ class User(Base):
     try:
       data = backquote(['tel', self.name]).split('\n')[1]
     except OSError as e:
-      print(e)
+      logging.error(e)
       return 'Joe Doe'
     name, tel = data.rsplit(' ', 1)
     return name.strip()
@@ -66,6 +77,14 @@ class User(Base):
 
     return 'User("%s", %d)' % (self.name, self.id)
 
+def as_unicode(s):
+  if six.PY2 and isinstance(s, str): return s.decode('utf-8')
+  return s
+
+def as_str(s):
+  if six.PY2 and not isinstance(s, str): return s.encode('utf-8')
+  return s
+
 class Lunch(Base):
   """A particular lunch with a menu and subscribers"""
 
@@ -73,7 +92,7 @@ class Lunch(Base):
 
   id = Column(Integer, primary_key=True)
 
-  date = Column(Date)
+  date = Column(Date, unique=True)
 
   menu_french = Column(String(128), unique=True)
 
@@ -82,18 +101,22 @@ class Lunch(Base):
   user_id = Column(Integer, ForeignKey('user.id'))
   user = relationship(User, backref=backref('lunches', order_by=id))
 
-  def __init__(self, date, menu, user):
+  def __init__(self, date, menu_french, menu_english, user):
 
     self.date = date
-    self.menu_french = menu[0].decode('utf-8')
-    self.menu_english = menu[1].decode('utf-8')
+    self.menu_french = as_unicode(menu_french)
+    self.menu_english = as_unicode(menu_english)
     self.user = user
     self.user_id = user.id
 
   def __repr__(self):
 
-    retval = 'Lunch(%s, "%s", %s)' % (self.date, self.menu_french, self.user)
-    return retval.encode('utf-8')
+    return as_str('Lunch(%s, "%s", %s)' % (format_date(self.date), self.menu_french, self.user))
+
+  def total_subscribers(self):
+    """Returns the total number of subscribers to a lunch"""
+
+    return sum([k.persons for k in self.subscriptions])
 
 class Subscription(Base):
   """A subscription to a particular lunch"""
@@ -112,38 +135,38 @@ class Subscription(Base):
   user_id = Column(Integer, ForeignKey('user.id'))
   user = relationship(User, backref=backref('subscriptions', order_by=id))
 
-  def __init__(self, lunch, user, persons):
+  def __init__(self, lunch, user, persons, date=datetime.datetime.now()):
 
     self.lunch_id = lunch.id
     self.lunch = lunch
     self.user_id = user.id
     self.user = user
     self.persons = persons
-    self.date = datetime.datetime.now()
+    self.date = date
 
   def __repr__(self):
-    retval = u"Subscription(%s, %s, %d)" % (str(self.lunch).decode('utf-8'),
-        self.user, self.persons)
-    return retval.encode('utf-8')
 
-def create(args):
+    ulunch = as_unicode(repr(self.lunch))
+    return as_str('Subscription(%s, %s, %d, %s)' % \
+        (ulunch, self.user, self.persons, self.date))
+
+def create(dbfile, recreate=False):
   """Creates or re-creates this database"""
 
-  dbfile = args['--dbfile']
-  if args['--recreate'] and os.path.exists(dbfile):
-    print("Erasing old database at `%s'..." % dbfile)
+  if dbfile and recreate and os.path.exists(dbfile):
+    logging.info("Erasing old database at `%s'..." % dbfile)
     os.unlink(dbfile)
 
-  engine = create_engine('sqlite:///' + dbfile)
+  if dbfile: engine = create_engine('sqlite:///' + dbfile)
+  else: engine = create_engine('sqlite://', echo=False) #in-memory
+  Base.metadata.create_all(engine)
 
-  User.metadata.create_all(engine)
-  Lunch.metadata.create_all(engine)
-  Subscription.metadata.create_all(engine)
+  return engine
 
 def connect(dbfile):
   """Creates a new connection to the database and return it"""
 
+  engine = create(dbfile)
   Session = sessionmaker()
-  engine = create_engine('sqlite:///' + dbfile)
   Session.configure(bind=engine)
   return Session()

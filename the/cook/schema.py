@@ -6,6 +6,7 @@
 """Validation routines"""
 
 from datetime import date, datetime
+from .models import as_unicode
 
 def validate_email(o):
   """Validates the input string to be one of:
@@ -20,13 +21,18 @@ def validate_email(o):
 
 def validate_date(o):
   """Validates the input string to be one of:
-     * dd
-     * dd.mm
-     * dd.mm.yy
+
+     * None - the same as ``"today"``
+     * ``"today"`` - means the date of today
+     * ``"dd"`` - means the day for the current month and year
+     * ``"dd.mm"`` - means the day and month for the current year
+     * ``"dd.mm.yy"`` - specifies day, month and year (with 2 digits)
 
   Returns the validated date.
   """
   today = date.today()
+
+  if o is None: return today
 
   dots = o.count('.')
 
@@ -45,24 +51,28 @@ def validate_date(o):
 
 def validate_range(o):
   """Validates the date range like this:
-     * start.. -> start-date until end of times
-     * start..end -> precise start and end dates
-     * ..end -> start of times until end-date
-     * .. -> start of times until end of times
-     * today..end -> from today
-     * start..today -> up to today
+     * ``None`` -> the same as ``..``
+     * ``start..`` -> from start-date
+     * ``start..end`` -> precise start and end dates
+     * ``..end`` -> until end-date
+     * ``..`` -> all possible values
+     * ``today..end`` -> from today
+     * ``start..today`` -> up to today
 
   Returns a tuple with formal start and end dates
   """
+
+  if o is None:
+    return (date.min, date.max)
 
   valid = o.count('..')
   if not valid:
     raise ValueError('Date range should be in the format <start>..<end>')
 
   start, end = o.split('..', 1)
-  if not start: start = datetime.min
+  if not start: start = date.min
   else: start = validate_date(start)
-  if not end: end = datetime.max
+  if not end: end = date.max
   else: end = validate_date(end)
 
   return start, end
@@ -85,4 +95,4 @@ def validate_menu(o):
     french = o
     english = ''
 
-  return french, english
+  return as_unicode(french), as_unicode(english)

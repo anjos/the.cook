@@ -8,29 +8,34 @@
 import os
 import sys
 import datetime
-from .models import User, Lunch, Subscription, connect
-from .menu import get_current_user
+import logging
+from .models import User, Lunch, Subscription, connect, format_date
+from .menu import get_current_user, next_lunch
 
-def reminder(args):
+def reminder(session, email):
   "Sends a reminder for lunch subscription, with the menu"
 
-  session = connect(args['--dbfile'])
-  next_lunch = session.query(Lunch).filter(Lunch.date >= datetime.date.today()).first()
-  user = get_current_user(session, args)
+  lunch = next_lunch(session)
+
+  if lunch is None:
+    logging.error("There are no further lunches planned as of today, %s" % format_date(datetime.datetime.now()))
+    return False
+
+  user = get_current_user(session)
   path = os.path.dirname(sys.argv[0])
   session.close()
 
   tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-  if (next_lunch.date != tomorrow):
-    print("There is no lunch scheduled for tomorrow, %s" % tomorrow.strftime("%A, %d/%m/%Y"))
-    return
+  if (lunch.date != tomorrow):
+    logging.error("There is no lunch scheduled for tomorrow, as of today, %s" % format_date(tomorrow))
+    return False
 
   message = [
-      "Hello, next %s, the Vatel Restaurant will organise" % next_lunch.date.strftime("%A, %d/%m/%y"),
+      "Hello, next %s, the Vatel Restaurant will organise" % format_date(lunch.date),
       "lunch for all Idiapers that subscribed by today 18h00. The menu is:",
       "",
-      "Français: %s" % next_lunch.menu_french.encode('utf-8'),
-      "English: %s" % next_lunch.menu_english.encode('utf-8'),
+      "Français: %s" % lunch.menu_french.encode('utf-8'),
+      "English: %s" % lunch.menu_english.encode('utf-8'),
       "",
       "To subscribe to this lunch, execute the following command on a Linux",
       "workstation at Idiap:",
@@ -51,57 +56,55 @@ def reminder(args):
       "Yours faithfully, The Cook.",
       ]
 
-  if args['<email>'] is None:
+  if email is None:
     print("From: %s <%s>" % (user.fullname(), user.email()))
     print("To: Miscellaneous Varied Varieties <misc@idiap.ch>")
-    print("Subject: [food] [%s] %s" % (next_lunch.date.strftime("%a, %d/%m/%y"), next_lunch.menu_french.encode('utf-8')))
+    print("Subject: [food] [%s] %s" % (format_date(lunch.date), lunch.menu_french.encode('utf-8')))
     print("")
     for l in message: print(l)
 
   else:
     raise NotImplementedError("This bot cannot yet send messages")
 
-def report(args):
+def report(session, email):
   "Sends a PDF report to the Vatel Restaurant"
 
-  session = connect(args['--dbfile'])
-  next_lunch = session.query(Lunch).filter(Lunch.date >= datetime.date.today()).first()
-  user = get_current_user(session, args)
+  lunch = next_lunch(session)
+  user = get_current_user(session)
   path = os.path.dirname(sys.argv[0])
 
   tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-  if (next_lunch.date != tomorrow):
-    print("There is no lunch scheduled for tomorrow, %s" % tomorrow.strftime("%A, %d/%m/%Y"))
+  if (lunch.date != tomorrow):
+    print("There is no lunch scheduled for tomorrow, %s" % format_date(tomorrow))
     return
 
   message = [
-      "Menu proposé pour %s:" % next_lunch.date.strftime("%A, %d/%m/%Y"),
+      "Menu proposé pour %s:" % format_date(lunch.date),
       "",
-      "\"%s\"" % next_lunch.menu_french.encode('utf-8'),
+      "\"%s\"" % lunch.menu_french.encode('utf-8'),
       "",
       "Idiapers inscrits pour ce repas:",
       "",
       ]
 
-  total = 0
-  for s in next_lunch.subscriptions:
-    total += s.persons
-    message.append("%s (%s) <%s>: %d" % \
-        (s.user.fullname(), s.user.phone(), s.user.email(), s.persons))
+  for s in lunch.subscriptions:
+    message.append("%s (%s) <%s>: %d (CHF %d.-)" % \
+        (s.user.fullname(), s.user.phone(), s.user.email(), s.persons,
+          10*s.persons))
 
   message += [
       "",
-      "Total: %d personne(s)" % s.persons,
+      "Total: %d personne(s)" % lunch.total_subscribers(),
       "",
       "Merci de nous confirmer la bonne récéption de ce couriel,"
       "",
       "%s <%s>" % (user.fullname(), user.email()),
       ]
 
-  if args['<email>'] is None:
+  if email is None:
     print("From: %s <%s>" % (user.fullname(), user.email()))
     print("To: Réception - Hotel Vatel <info@hotelvatel.ch>")
-    print("Subject: Inscription pour le repas du %s" % (next_lunch.date.strftime('%A, %d/%m/%Y'),))
+    print("Subject: Inscription pour le repas du %s" % format_date(lunch.date))
     print("")
     for l in message: print(l)
 
@@ -110,17 +113,16 @@ def report(args):
 
   session.close()
 
-def call(args):
+def call(session, dry_run):
   "Sends a call for subscribes of the day lunch"
 
-  session = connect(args['--dbfile'])
-  next_lunch = session.query(Lunch).filter(Lunch.date >= datetime.date.today()).first()
-  user = get_current_user(session, args)
+  lunch = next_lunch(session)
+  user = get_current_user(session)
   path = os.path.dirname(sys.argv[0])
 
-  if (next_lunch.date != datetime.date.today()):
+  if (lunch.date != datetime.date.today()):
     print("There is no lunch scheduled for today, %s" %
-        datetime.date.today().strftime("%A, %d/%m/%Y"))
+        format_date(datetime.date.today()))
     return
 
   message = [
@@ -128,10 +130,10 @@ def call(args):
       ""
       "This is a reminder that you have subscribed for the Idiap lunch today:",
       "",
-      "Français: %s" % next_lunch.menu_french.encode('utf-8'),
-      "English: %s" % next_lunch.menu_english.encode('utf-8'),
+      "Français: %s" % lunch.menu_french.encode('utf-8'),
+      "English: %s" % lunch.menu_english.encode('utf-8'),
       "",
-      "There are %d people subscribed in total" % len(next_lunch.subscriptions),
+      "There are %d people subscribed in total" % len(lunch.subscriptions),
       "",
       "**Payment**: Payment for your lunch should be done before you eat",
       "your lunch. The Vatel Restaurant accepts that you pay just before",
@@ -146,15 +148,15 @@ def call(args):
       "Yours faithfully, The Cook.",
       ]
 
-  print args
-  if args['--dry-run']:
+  if dry_run:
     print("From: %s <%s>" % (user.fullname(), user.email()))
-    print("To: %d users <...@idiap.ch>" % len(next_lunch.subscriptions))
-    print("Subject: [food] [reminder] [%s] %s" % (next_lunch.date.strftime("%a, %d/%m/%y"), next_lunch.menu_french.encode('utf-8')))
+    print("To: %d users <...@idiap.ch>" % len(lunch.subscriptions))
+    print("Subject: [food] [reminder] [%s] %s" % (format_date(lunch.date), lunch.menu_french.encode('utf-8')))
     print("")
     for l in message: print(l)
 
   else:
+    # TODO: Tell the person the number of subscribes and the total to pay
     raise NotImplementedError("This bot cannot yet send messages")
 
   session.close()

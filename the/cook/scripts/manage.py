@@ -6,14 +6,14 @@
 """Manage Idiap Lunch properties, send e-mails, reminders
 
 Usage:
-  %(prog)s [--dbfile=<s>] init [-r]
-  %(prog)s [--dbfile=<s>] add <date> <menu>
-  %(prog)s [--dbfile=<s>] remove <date>
-  %(prog)s [--dbfile=<s>] list [-s|-l] [<range>]
-  %(prog)s [--dbfile=<s>] subscribe [<date>] [--persons=<n>]
-  %(prog)s [--dbfile=<s>] reminder [<email>]
-  %(prog)s [--dbfile=<s>] report [<email>]
-  %(prog)s [--dbfile=<s>] call [--dry-run|-n]
+  %(prog)s [--dbfile=<s>] [-v ...] init [--recreate]
+  %(prog)s [--dbfile=<s>] [-v ...] add <date> <menu>
+  %(prog)s [--dbfile=<s>] [-v ...] remove [--force] <date>
+  %(prog)s [--dbfile=<s>] [-v ...] list [--long] [<range>]
+  %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
+  %(prog)s [--dbfile=<s>] [-v ...] reminder [<email>]
+  %(prog)s [--dbfile=<s>] [-v ...] report [<email>]
+  %(prog)s [--dbfile=<s>] [-v ...] call [--dry-run]
   %(prog)s (-h | --help)
   %(prog)s (-V | --version)
 
@@ -35,21 +35,26 @@ Arguments:
 
 
 Options:
-  -h --help      Shows this screen.
-  -V --version   Shows version.
-  -s --short     When listing, prints only dates and # of subscribers
-  -l --long      When listing, prints menus and names of subscribers
-  -r --recreate  When initializing, use this flag to remove an old database and
-                 create a brand new one in place
-  --dbfile=<s>   Use a different database file then the default, package bound
-                 file. This is useful for testing purposes.
-  --persons=<n>  If you'd like to subscribe (and vouche) for more than one
-                 person, specify on this field how many. You will be
-                 responsible for paying for those persons at the Vatel
-                 Restaurant as only your name will figure on the final list
-                 [default: 1].
-  -n --dry-run   In reminder mode, instead of sending the messages, just
-                 simulates what it would send.
+  -h --help         Shows this screen.
+  -V --version      Shows version.
+  -l --long         When listing, use the "long" mode and get more information
+                    displayed instead of a summarized output
+  --recreate        When initializing, use this flag to remove an old database
+                    and create a brand new one in place
+  -d --dbfile=<s>   Use a different database file then the default, package
+                    bound file. This is useful for testing purposes.
+  -p --persons=<n>  If you'd like to subscribe (and vouche) for more than one
+                    person, specify on this field how many. You will be
+                    responsible for paying for those persons at the Vatel
+                    Restaurant as only your name will figure on the final list
+                    [default: 1].
+  -n --dry-run      In reminder mode, instead of sending the messages, just
+                    simulates what it would send.
+  -f --force        A lunch will not be deleted if people are already
+                    subscribed to it. Use this flag to overwrite this behavior
+                    and delete both lunch and subscriptions associated with
+                    that lunch.
+  -v --verbose      Increases the verbosity level for this application.
 
 
 Commands:
@@ -112,19 +117,23 @@ def main(argv=None):
     'reminder': object, #ignore
     'report': object, #ignore
     'call': object, #ignore
-    '<date>': schema.Or(None, schema.Use(validate_date)),
-    '<range>': schema.Or(None, schema.Use(validate_range)),
+    '<date>': schema.Use(validate_date),
+    '<range>': schema.Use(validate_range),
     '<menu>': schema.Or(None, schema.Use(validate_menu)),
     '<email>': schema.Or(None, schema.Use(validate_email)),
     '--help'    : object, #ignore
     '--version' : object, #ignore
-    '--short' : object, #ignore
     '--long' : object, #ignore
     '--recreate': object, #ignore
     '--dbfile': object, #ignore
     '--persons': schema.And(schema.Use(int), lambda n: n > 0),
     '--dry-run': object, #ignore
+    '--force': object, #ignore
+    '--verbose': object, #ignore
     })
+
+  if arguments['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
+  if arguments['--verbose'] >  1: logging.getLogger().setLevel(logging.DEBUG)
 
   arguments = s.validate(arguments)
 
@@ -134,34 +143,37 @@ def main(argv=None):
         'thecook.sql3'
         )
 
-  if arguments['<range>'] is None:
-    arguments['<range>'] = (datetime.date.min, datetime.date.max)
+  from ..models import create, connect
+  from ..menu import add, remove, list_entries, subscribe
+  from ..sendmail import reminder, report, call
 
   if arguments['init']:
-    from ..models import create
-    create(arguments)
+    create(arguments['--dbfile'], arguments['--recreate'])
   elif arguments['add']:
-    from ..menu import add
-    add(arguments)
+    session = connect(arguments['--dbfile'])
+    add(session, arguments['<date>'],
+        arguments['<menu>'][0], arguments['<menu>'][1])
   elif arguments['remove']:
-    from ..menu import remove
-    remove(arguments)
+    session = connect(arguments['--dbfile'])
+    remove(session, arguments['<date>'], arguments['--force'])
   elif arguments['list']:
-    from ..menu import list_entries
-    list_entries(arguments)
+    session = connect(arguments['--dbfile'])
+    to_print = list_entries(session,
+        arguments['<range>'][0], arguments['<range>'][1], arguments['--long'])
+    for k in to_print: print(k)
   elif arguments['subscribe']:
-    from ..menu import subscribe
-    subscribe(arguments)
+    session = connect(arguments['--dbfile'])
+    subscribe(session, arguments['<date>'], arguments['--persons'])
   elif arguments['reminder']:
-    from ..sendmail import reminder
-    reminder(arguments)
+    session = connect(arguments['--dbfile'])
+    reminder(session, arguments['<email>'])
   elif arguments['report']:
-    from ..sendmail import report
-    report(arguments)
+    session = connect(arguments['--dbfile'])
+    report(session, arguments['<email>'])
   elif arguments['call']:
-    from ..sendmail import call
-    call(arguments)
+    session = connect(arguments['--dbfile'])
+    call(session, arguments['--dry-run'])
   else:
-    raise NotImplementedError("unknown command - debug me")
+    raise NotImplementedError("unknown command")
 
   return 0
