@@ -7,6 +7,7 @@
 
 import os
 import sys
+import six
 import datetime
 import logging
 from .models import format_date, as_str, as_unicode
@@ -27,18 +28,18 @@ def sendmail(author, to, subject, contents, cc=None):
 
   msg = MIMEText('\n'.join(contents))
 
-  msg['From'] = author.name_and_email()
+  msg['From'] = as_str(author.name_and_email())
   msg['To']   = ', '.join(to)
-  msg['Subject'] = subject
+  msg['Subject'] = as_str(subject)
   if cc: msg['Cc'] = ', '.join(cc)
 
-  s = smtplib.SMTP('localhost')
+  s = smtplib.SMTP_SSL('smtp.idiap.ch', 465)
   recipients = to
   if cc: recipients += cc
   s.sendmail(author.name_and_email(), recipients, msg.as_string())
   s.quit()
 
-def reminder(session, address, cc=None):
+def call(session, address, force, cc=None):
   "Sends a reminder for lunch subscription, with the menu"
 
   lunch = next_lunch(session)
@@ -51,7 +52,7 @@ def reminder(session, address, cc=None):
   path = os.path.dirname(sys.argv[0])
 
   tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-  if (lunch.date != tomorrow):
+  if (lunch.date != tomorrow) and not force:
     logging.error("There is no lunch scheduled for tomorrow, as of today, %s" % format_date(tomorrow))
     return False
 
@@ -94,7 +95,7 @@ def reminder(session, address, cc=None):
   else:
     sendmail(user, address, subject, message, cc)
 
-def report(session, address, cc=None):
+def report(session, address, force, cc=None):
   "Sends a PDF report to the Vatel Restaurant"
 
   lunch = next_lunch(session)
@@ -102,11 +103,13 @@ def report(session, address, cc=None):
   path = os.path.dirname(sys.argv[0])
 
   tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-  if (lunch.date != tomorrow):
+  if (lunch.date != tomorrow) and not force:
     print("There is no lunch scheduled for tomorrow, %s" % format_date(tomorrow))
     return
 
   message = [
+      "Bonjour,",
+      "",
       "Menu proposé pour %s:" % format_date(lunch.date),
       "",
       "\"%s\"" % as_str(lunch.menu_french),
@@ -141,7 +144,7 @@ def report(session, address, cc=None):
   else:
     sendmail(user, address, subject, message, cc)
 
-def call(session, dry_run):
+def remind(session, dry_run, force):
   "Sends a call for subscribes of the day lunch"
 
   lunch = next_lunch(session)

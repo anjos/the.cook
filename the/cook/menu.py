@@ -149,9 +149,12 @@ def list_entries(session, start, end, long_desc):
 
   retval = []
   for l in lunches:
-    retval.append("%s, %d subscriber(s)" % (l, l.total_subscribers()))
+    retval.append("[%s] %s, %d subscriber(s)" % \
+        (format_date(l.date), l.menu_english, l.total_subscribers()))
     if long_desc:
-      retval[-1] += ":"
-      for s in l.subscriptions: retval.append("  " + str(s))
+      if len(l.subscriptions): retval[-1] += ":"
+      for s in l.subscriptions:
+        retval.append("  - %s: %d person(s)" % \
+            (s.user.name_and_email(), s.persons))
 
   return retval

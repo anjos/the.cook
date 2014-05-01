@@ -11,9 +11,9 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] remove [--force] <date>
   %(prog)s [--dbfile=<s>] [-v ...] list [--long] [<range>]
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
-  %(prog)s [--dbfile=<s>] [-v ...] reminder [<email>]
-  %(prog)s [--dbfile=<s>] [-v ...] report [<email>]
-  %(prog)s [--dbfile=<s>] [-v ...] call [--dry-run]
+  %(prog)s [--dbfile=<s>] [-v ...] call [--force] [<email>]
+  %(prog)s [--dbfile=<s>] [-v ...] report [--force] [<email>]
+  %(prog)s [--dbfile=<s>] [-v ...] reminder [--dry-run]
   %(prog)s (-h | --help)
   %(prog)s (-V | --version)
 
@@ -50,10 +50,7 @@ Options:
                     [default: 1].
   -n --dry-run      In reminder mode, instead of sending the messages, just
                     simulates what it would send.
-  -f --force        A lunch will not be deleted if people are already
-                    subscribed to it. Use this flag to overwrite this behavior
-                    and delete both lunch and subscriptions associated with
-                    that lunch.
+  -f --force        Force the action, even if it has nasty consequences
   -v --verbose      Increases the verbosity level for this application.
 
 
@@ -62,9 +59,10 @@ Commands:
   add       Adds a new menu for a specific date
   remove    Removes the menu entry for that date
   list      Lists past and future menus, with subscribers
-  reminder  Sends a reminder for lunch subscription, with the menu
+  subscribe Allows for the user to subscribe to the next lunches
+  call      Calls idiapers for lunch subscription, with the menu
   report    Sends a PDF report to the Vatel Restaurant
-  call      Sends a call for subscribes of the day lunch
+  remind    Sends a reminder for subscribes of the day lunch
 
 
 Examples:
@@ -145,7 +143,7 @@ def main(argv=None):
 
   from ..models import create, connect
   from ..menu import add, remove, list_entries, subscribe
-  from ..sendmail import reminder, report, call
+  from ..sendmail import remind, report, call
 
   if arguments['init']:
     create(arguments['--dbfile'], arguments['--recreate'])
@@ -164,15 +162,15 @@ def main(argv=None):
   elif arguments['subscribe']:
     session = connect(arguments['--dbfile'])
     subscribe(session, arguments['<date>'], arguments['--persons'])
-  elif arguments['reminder']:
-    session = connect(arguments['--dbfile'])
-    reminder(session, arguments['<email>'])
-  elif arguments['report']:
-    session = connect(arguments['--dbfile'])
-    report(session, arguments['<email>'])
   elif arguments['call']:
     session = connect(arguments['--dbfile'])
-    call(session, arguments['--dry-run'])
+    call(session, [arguments['<email>']], arguments['--force'])
+  elif arguments['report']:
+    session = connect(arguments['--dbfile'])
+    report(session, [arguments['<email>']], arguments['--force'])
+  elif arguments['remind']:
+    session = connect(arguments['--dbfile'])
+    remind(session, arguments['--dry-run'], arguments['--force'])
   else:
     raise NotImplementedError("unknown command")
 
