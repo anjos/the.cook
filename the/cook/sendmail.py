@@ -129,7 +129,7 @@ def report(session, address, force, cc=None):
       "",
       "Total: %d personne(s)" % lunch.total_subscribers(),
       "",
-      "Merci de nous confirmer la bonne récéption de ce couriel,"
+      "Merci de nous confirmer la bonne récéption de ce couriel,",
       "",
       "%s" % user.name_and_email(),
       ]
