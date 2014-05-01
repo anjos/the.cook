@@ -8,23 +8,6 @@
 from datetime import date, datetime
 from .models import as_unicode
 
-def validate_email(o):
-  """Validates the input string to be one of:
-     * user@example.com
-     * User <user@example.com>
-
-  Returns a tuple (fullname, email)
-  """
-  from email.utils import parseaddr
-
-  retval = parseaddr(o)
-
-  if not retval[0]:
-    if retval[1]: return retval[1]
-    else: return ''
-
-  return retval
-
 def validate_date(o):
   """Validates the input string to be one of:
 

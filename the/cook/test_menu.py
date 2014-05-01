@@ -10,7 +10,6 @@ from sqlalchemy.orm import sessionmaker
 import six
 
 from .menu import add, remove, lunches_in_range, subscribe, get_current_user, lunch_at_date
-from .sendmail import reminder, report, call
 from .models import connect, Base, User, Lunch, Subscription
 
 today = datetime.date.today()

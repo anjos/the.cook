@@ -26,6 +26,8 @@ def sendmail(author, to, subject, contents, cc=None):
   import smtplib
   from email.mime.text import MIMEText
 
+  import ipdb; ipdb.set_trace()
+
   msg = MIMEText('\n'.join(contents))
 
   msg['From'] = as_str(author.name_and_email())
@@ -85,7 +87,7 @@ def call(session, address, force, cc=None):
 
   subject = "[food] [%s] %s" % (format_date(lunch.date), lunch.menu_french)
 
-  if address is None:
+  if not address:
     print("From: %s" % user.name_and_email())
     print("Subject: %s" % subject)
     if cc: print("Cc: %s" % ", ".join(cc))
@@ -134,7 +136,7 @@ def report(session, address, force, cc=None):
 
   subject = "Inscription pour le repas du %s" % format_date(lunch.date)
 
-  if address is None:
+  if not address:
     print("From: %s" % user.name_and_email())
     print("Subject: %s" % subject)
     if cc: print("Cc: %s" % ", ".join(cc))

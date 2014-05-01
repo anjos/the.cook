@@ -91,11 +91,11 @@ def test_list_long():
       )
   assert main(cmdline) == 0
 
-def test_reminder():
+def test_call():
 
   cmdline = (
       '--dbfile=%s' % dbfile.name,
-      'reminder',
+      'call',
       )
   assert main(cmdline) == 0
 
@@ -107,11 +107,11 @@ def test_report():
       )
   assert main(cmdline) == 0
 
-def test_call():
+def test_remind():
 
   cmdline = (
       '--dbfile=%s' % dbfile.name,
-      'call',
+      'remind',
       '--dry-run',
       )
   assert main(cmdline) == 0
@@ -135,11 +135,11 @@ def test_add_in3days():
       )
   assert main(cmdline) == 0
 
-def test_reminder_fails():
+def test_remind_fails():
 
   cmdline = (
       '--dbfile=%s' % dbfile.name,
-      'reminder',
+      'remind',
       )
   assert main(cmdline) == 0
 

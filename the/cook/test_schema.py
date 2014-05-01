@@ -4,19 +4,7 @@
 # Wed 30 Apr 2014 05:54:29 CEST
 
 import nose.tools
-from .schema import validate_email, validate_date, validate_range, validate_menu
-
-def test_valid_email():
-
-  n = validate_email('André Anjos <andre.anjos@idiap.ch')
-  nose.tools.eq_(len(n), 2)
-  assert n[1].count('@') == 1
-  assert n[0].count('@') == 0
-
-def test_invalid_email():
-
-  n = validate_email(']andre!anjos')
-  assert not n[0] and  not n[1]
+from .schema import validate_date, validate_range, validate_menu
 
 def test_valid_date():
 

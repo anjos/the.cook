@@ -11,9 +11,9 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] remove [--force] <date>
   %(prog)s [--dbfile=<s>] [-v ...] list [--long] [<range>]
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
-  %(prog)s [--dbfile=<s>] [-v ...] call [--force] [<email>]
-  %(prog)s [--dbfile=<s>] [-v ...] report [--force] [<email>]
-  %(prog)s [--dbfile=<s>] [-v ...] reminder [--dry-run]
+  %(prog)s [--dbfile=<s>] [-v ...] call [--force] [<email>]...
+  %(prog)s [--dbfile=<s>] [-v ...] report [--force] [<email>]...
+  %(prog)s [--dbfile=<s>] [-v ...] remind [--dry-run]
   %(prog)s (-h | --help)
   %(prog)s (-V | --version)
 
@@ -94,7 +94,7 @@ import docopt
 import schema
 import datetime
 
-from ..schema import validate_date, validate_email, validate_range, validate_menu
+from ..schema import validate_date, validate_range, validate_menu
 
 def main(argv=None):
 
@@ -112,13 +112,13 @@ def main(argv=None):
     'remove': object, #ignore
     'list': object, #ignore
     'subscribe': object, #ignore
-    'reminder': object, #ignore
+    'remind': object, #ignore
     'report': object, #ignore
     'call': object, #ignore
     '<date>': schema.Use(validate_date),
     '<range>': schema.Use(validate_range),
     '<menu>': schema.Or(None, schema.Use(validate_menu)),
-    '<email>': schema.Or(None, schema.Use(validate_email)),
+    '<email>': object, #ignore
     '--help'    : object, #ignore
     '--version' : object, #ignore
     '--long' : object, #ignore
@@ -164,10 +164,10 @@ def main(argv=None):
     subscribe(session, arguments['<date>'], arguments['--persons'])
   elif arguments['call']:
     session = connect(arguments['--dbfile'])
-    call(session, [arguments['<email>']], arguments['--force'])
+    call(session, arguments['<email>'], arguments['--force'])
   elif arguments['report']:
     session = connect(arguments['--dbfile'])
-    report(session, [arguments['<email>']], arguments['--force'])
+    report(session, arguments['<email>'], arguments['--force'])
   elif arguments['remind']:
     session = connect(arguments['--dbfile'])
     remind(session, arguments['--dry-run'], arguments['--force'])
