@@ -13,7 +13,7 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
   %(prog)s [--dbfile=<s>] [-v ...] call [--force] [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] report [--force] [<email>]...
-  %(prog)s [--dbfile=<s>] [-v ...] remind [--dry-run]
+  %(prog)s [--dbfile=<s>] [-v ...] remind [--force] [--dry-run]
   %(prog)s (-h | --help)
   %(prog)s (-V | --version)
 

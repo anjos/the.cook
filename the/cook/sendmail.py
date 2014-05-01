@@ -146,14 +146,14 @@ def report(session, address, force, cc=None):
   else:
     sendmail(user, address, subject, message, cc)
 
-def remind(session, dry_run, force):
+def remind(session, dry_run, force, cc=None):
   "Sends a call for subscribes of the day lunch"
 
   lunch = next_lunch(session)
   user = get_current_user(session)
   path = os.path.dirname(sys.argv[0])
 
-  if (lunch.date != datetime.date.today()):
+  if lunch.date != datetime.date.today() and not force:
     print("There is no lunch scheduled for today, %s" %
         format_date(datetime.date.today()))
     return
@@ -171,10 +171,10 @@ def remind(session, dry_run, force):
       ]
 
   for s in lunch.subscriptions:
-    message2.append("  - %s: %d person(s)" % \
-        (s.user.name_and_email(), s.persons))
+    message.append(as_str("  - %s: %d person(s)" % \
+        (s.user.name_and_email(), s.persons)))
 
-  message = [
+  message += [
       "",
       "**Payment**: Payment for your lunch should be done before you eat",
       "your lunch. The Vatel Restaurant accepts that you pay just before",
@@ -185,16 +185,12 @@ def remind(session, dry_run, force):
       "people you vouched for. When you pay, demand and keep a receipt of",
       "your payment. That is your sole proof of payment.",
       "",
-      ]
-
-  message += [
-      "",
       "Where: Downstairs, at the Idiap kitchen by default. You should procure",
       "your own cutlery (a fork and a knife) and beverage and bring that with",
       "you. If you are the first to arrive and the meal is not set on the hot",
       "plates, please go the Vatel Restaurant reception and ask them to serve",
       "the meal. All others thank you in advance.",
-      ""
+      "",
       "Time: The semi-official lunch time is 12h30",
       "",
       "Yours faithfully, The Cook.",
@@ -210,5 +206,5 @@ def remind(session, dry_run, force):
     for l in message: print(l)
 
   else:
-    address = [k.user.name_and_email() for k in lunch.subscriptions]
+    address = [as_str(k.user.name_and_email()) for k in lunch.subscriptions]
     sendmail(user, address, subject, message, cc)
