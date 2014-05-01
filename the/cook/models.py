@@ -94,9 +94,9 @@ class Lunch(Base):
 
   date = Column(Date, unique=True)
 
-  menu_french = Column(String(128), unique=True)
+  menu_french = Column(String(128))
 
-  menu_english = Column(String(128), unique=True)
+  menu_english = Column(String(128))
 
   user_id = Column(Integer, ForeignKey('user.id'))
   user = relationship(User, backref=backref('lunches', order_by=id))
