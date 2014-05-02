@@ -115,9 +115,12 @@ def in_french(func):
   def inner(*args, **kwargs):
     import locale
     current_locale = locale.setlocale(locale.LC_TIME, '')
-    locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8") # french from France
-    func(*args, **kwargs)
-    locale.setlocale(locale.LC_TIME, current_locale) # reset
+    try:
+      locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8") # french from France
+      func(*args, **kwargs)
+      locale.setlocale(locale.LC_TIME, current_locale) # reset
+    except:
+      pass
 
   return inner
 
