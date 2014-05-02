@@ -118,7 +118,7 @@ def main(argv=None):
     session = connect(dbfile)
     sub = subscribe(session, arguments['<date>'], arguments['--persons'])
     if sub:
-      print("User `%s' successfuly subscribed to lunch `%s' at `%s'" % \
+      print("User `%s' successfuly subscribed for lunch `%s' at `%s'" % \
           (sub.user.name, sub.lunch.menu_english, format_date(sub.lunch.date)))
   elif arguments['remove']:
     session = connect(dbfile)
