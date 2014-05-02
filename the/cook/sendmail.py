@@ -34,7 +34,7 @@ def sendmail(author, to, subject, contents, cc=None):
   import smtplib
   from email.mime.text import MIMEText
 
-  msg = MIMEText('\n'.join(contents))
+  msg = MIMEText('\n'.join(contents), 'plain', 'utf-8')
 
   msg['From'] = as_str(author.name_and_email())
   msg['To']   = ', '.join(to)
@@ -90,7 +90,16 @@ def call(session, address, force, cc=None):
       "",
       "**Payment**: Payment for your lunch should be done before you eat",
       "your lunch. The Vatel Restaurant accepts that you pay just before",
-      "eating, so you can pay when you go down for the lunch.",
+      "eating, so you can pay when you go down for the lunch. The price",
+      "for each lunch is CHF 10.-.",
+      "",
+      "Where: Downstairs, at the Idiap kitchen by default. You should procure",
+      "your own cutlery (a fork and a knife) and beverage and bring that with",
+      "you. If you are the first to arrive and the meal is not set on the hot",
+      "plates, please go the Vatel Restaurant reception and ask them to serve",
+      "the meal. All others thank you in advance.",
+      "",
+      "Time: The semi-official lunch time is 12h30",
       "",
       "Yours faithfully, The Cook.",
       ]
