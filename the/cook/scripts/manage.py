@@ -11,6 +11,7 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] remove [--force] <date>
   %(prog)s [--dbfile=<s>] [-v ...] list [--long] [<range>]
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
+  %(prog)s [--dbfile=<s>] [-v ...] unsubscribe [<date>]
   %(prog)s [--dbfile=<s>] [-v ...] call [--force] [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] report [--force] [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] remind [--force] [--dry-run]
@@ -20,7 +21,10 @@ Usage:
 
 Arguments:
   <date>   The date a certain menu is concerned with. Dates must have the
-           format dd.mm.yy
+           format 'dd.mm.yy'. If the date is not specified, it is assumed to
+           refer to the next viable subscribeable lunch. You can use keywords
+           like 'next' to refer to the next possible lunch, 'today' to refer to
+           today and 'tomorrow', to refer to the day after today.
   <range>  A date range for listing menu entries and subscribers. The range
            should be formatted like <start-date>..<end-date>. <start-date> may
            be suppressed, in which case you mean from today. If <end-date> is
@@ -55,14 +59,15 @@ Options:
 
 
 Commands:
-  init      Initializes the current repository for menus and subscribers
-  add       Adds a new menu for a specific date
-  remove    Removes the menu entry for that date
-  list      Lists past and future menus, with subscribers
-  subscribe Allows for the user to subscribe to the next lunches
-  call      Calls idiapers for lunch subscription, with the menu
-  report    Sends a PDF report to the Vatel Restaurant
-  remind    Sends a reminder for subscribes of the day lunch
+  init         Initializes the current repository for menus and subscribers
+  add          Adds a new menu for a specific date
+  remove       Removes the menu entry for that date
+  list         Lists past and future menus, with subscribers
+  subscribe    Subscribes the user to one of the next lunches
+  unsubscribe  Unsubscribes the user from one of the next lunches
+  call         Calls idiapers for lunch subscription, with the menu
+  report       Sends a PDF report to the Vatel Restaurant
+  remind       Sends a reminder for subscribes of the day lunch
 
 
 Examples:
@@ -112,6 +117,7 @@ def main(argv=None):
     'remove': object, #ignore
     'list': object, #ignore
     'subscribe': object, #ignore
+    'unsubscribe': object, #ignore
     'remind': object, #ignore
     'report': object, #ignore
     'call': object, #ignore
@@ -142,7 +148,7 @@ def main(argv=None):
         )
 
   from ..models import create, connect
-  from ..menu import add, remove, list_entries, subscribe
+  from ..menu import add, remove, list_entries, subscribe, unsubscribe
   from ..sendmail import remind, report, call
 
   if arguments['init']:
@@ -162,6 +168,9 @@ def main(argv=None):
   elif arguments['subscribe']:
     session = connect(arguments['--dbfile'])
     subscribe(session, arguments['<date>'], arguments['--persons'])
+  elif arguments['unsubscribe']:
+    session = connect(arguments['--dbfile'])
+    subscribe(session, arguments['<date>'])
   elif arguments['call']:
     session = connect(arguments['--dbfile'])
     call(session, arguments['<email>'], arguments['--force'])

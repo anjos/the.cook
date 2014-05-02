@@ -6,6 +6,7 @@
 """Functions to manage available lunch menus"""
 
 import os
+import six
 import getpass
 import datetime
 import logging
@@ -82,25 +83,37 @@ def next_lunch(session):
 
   return retval
 
-def next_subscribeable_lunch(session, date=None):
-  """Get next possible lunch to subscribe after a certain date
-
-  If the date is ``None`` or represents today, then the cut-off time (18h00) is
-  taken into consideration.
+def next_subscribeable_lunch(session):
+  """Get next possible lunch.
 
   Returns a lunch object or None, if no applicable lunch was found.
   """
 
   today = datetime.date.today()
-  if date <= today:
-    date = datetime.datetime(today.year, today.month, today.day, 18)
 
-  retval = session.query(Lunch).filter(Lunch.date>=date).order_by(Lunch.date)
+  query = session.query(Lunch).filter(Lunch.date>=today).order_by(Lunch.date)
 
-  return retval.first()
+  if query.count() == 0: return None
+
+  tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+  now = datetime.datetime.now()
+  today_at_18 = datetime.datetime(today.year, today.month, today.day, 18, 5)
+
+  # special condition: there is a lunch tomorrow, but you cannot subscribe to
+  # it any longer because it is more than 18h00 (the list has been sent to the
+  # hotel already).
+  retval = query.first()
+  if retval == today or (retval.date == tomorrow and now > today_at_18):
+    if query.count() > 1: return query[1] #returns the next possible lunch
+    else: return None
+
+  return retval
 
 def lunch_at_date(session, date):
   """Gets the lunch on the given date or returns None"""
+
+  if isinstance(date, six.string_types) and date == 'next':
+    return next_subscribeable_lunch(session)
 
   retval = session.query(Lunch).filter(Lunch.date==date)
 
@@ -112,11 +125,36 @@ def lunches_in_range(session, start, end):
 
   return session.query(Lunch).filter(Lunch.date >= start, Lunch.date <= end).order_by(Lunch.date)
 
+def unsubscribe(session, date):
+  """Unsubscribes the person from the lunch"""
+
+  user = get_current_user(session)
+  lunch = lunch_at_date(session, date)
+
+  if lunch is None:
+    logging.error("Cannot find lunch with open unsubscription for the input date (%s)" % format_date(date))
+    return None
+
+  #special case, if the date:
+
+  subscribed = session.query(Subscription).filter(
+      Subscription.lunch_id == lunch.id,
+      Subscription.user_id == user.id
+      ).first()
+  if subscribed is None:
+    logging.error("User `%s' is not subscribed for lunch `%s'" % (user, lunch))
+  else:
+    session.delete(subscribed)
+    logging.info("Deleted `%s'..." % subscribed)
+    session.commit()
+
+  return subscribed
+
 def subscribe(session, date, persons):
   """Subscribes a new user into the database, for a given lunch"""
 
   user = get_current_user(session)
-  lunch = next_subscribeable_lunch(session, date)
+  lunch = lunch_at_date(session, date)
 
   if lunch is None:
     logging.error("Cannot find lunch with open subscription for the input date (%s)" % format_date(date))

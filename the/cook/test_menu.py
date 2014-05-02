@@ -9,7 +9,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import six
 
-from .menu import add, remove, lunches_in_range, subscribe, get_current_user, lunch_at_date
+from .menu import add, remove, lunches_in_range, subscribe, unsubscribe, \
+    get_current_user, lunch_at_date
 from .models import connect, Base, User, Lunch, Subscription
 
 today = datetime.date.today()
@@ -99,7 +100,7 @@ def setup_lunches():
 @nose.tools.with_setup(setup_lunches)
 def test_subscribe():
 
-  sub = subscribe(session, today, 1) #notice: the lunch is actually tomorrow
+  sub = subscribe(session, 'next', 1) #notice: the lunch is actually tomorrow
   assert isinstance(sub, Subscription)
 
   lunch1 = lunch_at_date(session, tomorrow)
@@ -138,8 +139,18 @@ def setup_lunches_and_subs():
 
   setup_lunches()
 
-  subscribe(session, today, 1)
+  subscribe(session, tomorrow, 1)
   subscribe(session, in3days, 5)
+
+@nose.tools.with_setup(setup_lunches_and_subs)
+def test_unsubscribe():
+
+  lunch = lunch_at_date(session, tomorrow)
+  nose.tools.eq_(len(lunch.subscriptions), 1)
+  sub = unsubscribe(session, tomorrow) #unsubscribe from the next lunch
+  nose.tools.eq_(len(lunch.subscriptions), 0)
+  sub = unsubscribe(session, yesterday) #cannot unsubscribe from past lunches
+  assert sub is None
 
 @nose.tools.with_setup(setup_lunches_and_subs)
 def test_list():
