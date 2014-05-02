@@ -10,7 +10,7 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] add <date> <menu>
   %(prog)s [--dbfile=<s>] [-v ...] remove [--force] <date>
   %(prog)s [--dbfile=<s>] [-v ...] list [--long] [<range>]
-  %(prog)s [--dbfile=<s>] [-v ...] userlist [--long] [<range>] <username>
+  %(prog)s [--dbfile=<s>] [-v ...] userlist [--long] [<range>] [<username>]
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
   %(prog)s [--dbfile=<s>] [-v ...] unsubscribe [<date>]
   %(prog)s [--dbfile=<s>] [-v ...] call [--force] [<email>]...
@@ -156,7 +156,8 @@ def main(argv=None):
         )
 
   from ..models import create, connect
-  from ..menu import add, remove, lunch_list, user_list, subscribe, unsubscribe
+  from ..menu import add, remove, lunch_list, user_list, \
+      subscribe, unsubscribe, get_current_user
   from ..sendmail import remind, report, call
 
   if arguments['init']:
@@ -175,6 +176,9 @@ def main(argv=None):
     for k in to_print: print(k)
   elif arguments['userlist']:
     session = connect(arguments['--dbfile'])
+    if not arguments['<username>']:
+      user = get_current_user(session)
+      arguments['<username>'] = user.name
     to_print = user_list(session, arguments['<username>'],
         arguments['<range>'][0], arguments['<range>'][1], arguments['--long'])
     for k in to_print: print(k)

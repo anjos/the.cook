@@ -125,10 +125,10 @@ def lunches_in_range(session, start, end):
 
   return session.query(Lunch).filter(Lunch.date >= start, Lunch.date <= end).order_by(Lunch.date)
 
-def lunches_in_range_from_user(session, username, start, end):
-  """Returns all available lunches in the (start, end) range of dates"""
+def subscriptions_in_range(session, username, start, end):
+  """Returns all available subscriptions in the (start, end) range of dates"""
 
-  return session.query(Subscription).filter(User.name == username, Lunch.date >= start, Lunch.date <= end).distinct(Subscription.date).order_by(Subscription.date)
+  return session.query(Subscription).join(Lunch).filter(Lunch.date >= start, Lunch.date <= end, User.name == username).distinct(Subscription.date).order_by(Subscription.date)
 
 def unsubscribe(session, date):
   """Unsubscribes the person from the lunch"""
@@ -205,18 +205,19 @@ def lunch_list(session, start, end, long_desc):
 def user_list(session, username, start, end, long_desc):
   """List all existing entries in the system for a given user, matching a range"""
 
-  lunches = lunches_in_range_from_user(session, username, start, end)
+  subscriptions = subscriptions_in_range(session, username, start, end)
 
-  if not lunches:
+  if not subscriptions:
     logging.error("Cannot find subscribed lunches for user `%s' in range `%s' until `%s'", username, format_date(start), format_date(end))
     return
 
-  retval = ["User `%s' subscribed to the following lunches:", ""]
-  for l in lunches:
+  retval = ["User `%s' subscribed to the following lunches:" % username]
+  for s in subscriptions:
+    l = s.lunch
     if long_desc:
       retval.append("  - [%s] %s, %d total subscriber(s)" % \
           (format_date(l.date), l.menu_english, l.total_subscribers()))
     else:
-      retval.append("  - %s" % (format_date(l.date)))
+      retval.append("  - %s, %d subscriber(s)" % (format_date(l.date), l.total_subscribers()))
 
   return retval

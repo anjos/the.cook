@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 import six
 
 from .menu import add, remove, lunches_in_range, subscribe, unsubscribe, \
-    get_current_user, lunch_at_date, lunches_in_range_from_user
+    get_current_user, lunch_at_date, subscriptions_in_range
 from .models import connect, Base, User, Lunch, Subscription
 
 today = datetime.date.today()
@@ -157,12 +157,22 @@ def test_list():
 
   lunches = lunches_in_range(session, today, datetime.date.max)
   nose.tools.eq_(lunches.count(), 3)
+  assert lunches[0].date >= today
+  assert lunches[1].date >= today
+  assert lunches[2].date >= today
   nose.tools.eq_(lunches[0].total_subscribers(), 1)
   nose.tools.eq_(lunches[1].total_subscribers(), 5)
   nose.tools.eq_(lunches[2].total_subscribers(), 0)
 
   lunches = lunches_in_range(session, fivedaysago, twodaysago)
   nose.tools.eq_(lunches.count(), 0)
+
+  lunches = lunches_in_range(session, in3days, in7days)
+  nose.tools.eq_(lunches.count(), 2)
+  assert lunches[0].date >= in3days
+  assert lunches[0].date <= in7days
+  assert lunches[1].date >= in3days
+  assert lunches[1].date <= in7days
 
 @nose.tools.with_setup(setup_lunches_and_subs)
 def test_remove():
@@ -184,9 +194,21 @@ def test_remove():
 def test_user_list():
 
   user = get_current_user(session)
-  lunches = lunches_in_range_from_user(session, user.name, today, datetime.date.max)
-  assert lunches.count() == 2
+  subs = subscriptions_in_range(session, user.name, today, datetime.date.max)
+  nose.tools.eq_(subs.count(), 2)
+  assert subs[0].lunch.date >= today
+  assert subs[1].lunch.date >= today
+
+  # get a smaller range, make sure it works
+  subs = subscriptions_in_range(session, user.name, in3days, in7days)
+  nose.tools.eq_(subs.count(), 1)
+  assert subs[0].lunch.date >= in3days
+  assert subs[0].lunch.date <= in7days
 
   sub = unsubscribe(session, tomorrow) #unsubscribe from the next lunch
-  lunches = lunches_in_range_from_user(session, user.name, today, datetime.date.max)
-  assert lunches.count() == 1
+  lunches = subscriptions_in_range(session, user.name, today, datetime.date.max)
+  nose.tools.eq_(lunches.count(), 1)
+  assert subs[0].lunch.date >= today
+
+  subs = subscriptions_in_range(session, 'bla', today, datetime.date.max)
+  nose.tools.eq_(subs.count(), 0)
