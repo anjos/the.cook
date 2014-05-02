@@ -20,7 +20,8 @@ Arguments:
               refer to the next viable subscribeable lunch. You can use
               keywords like 'next' to refer to the next possible lunch, 'today'
               to refer to today and 'tomorrow', to refer to the day after
-              today.
+              today. Weekdays can also be passed either in long ('tuesday') or
+              short formats ('tue').
 
 
 Options:

@@ -8,12 +8,40 @@
 from datetime import date, datetime, timedelta
 from .models import as_unicode
 
+weekdays = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+    ]
+
+weekdays_short = [
+    'mon',
+    'tue',
+    'wed',
+    'thu',
+    'fri',
+    'sat',
+    'sun',
+    ]
+
+def next_weekday(d, weekday):
+
+  days_ahead = weekday - d.weekday()
+  if days_ahead <= 0: # Target day already happened this week
+    days_ahead += 7
+  return d + timedelta(days_ahead)
+
 def validate_date(o):
   """Validates the input string to be one of:
 
      * ``"next"`` - unchanged, means the next possible lunch
      * ``"today"`` - means the date of today
      * ``"tomorrow"`` - means the date of tomorrow
+     * ``"mon"`` or ``"monday"`` - means the **next** monday
      * ``"dd"`` - means the day for the current month and year
      * ``"dd.mm"`` - means the day and month for the current year
      * ``"dd.mm.yy"`` - specifies day, month and year (with 2 digits)
@@ -30,6 +58,10 @@ def validate_date(o):
     if o.lower() == 'today': return today
     if o.lower() == 'tomorrow': return today + timedelta(days=1)
     if o.lower() == 'next': return o.lower()
+    if o.lower() in weekdays:
+      return next_weekday(today, weekdays.index(o.lower()))
+    if o.lower() in weekdays_short:
+      return next_weekday(today, weekdays_short.index(o.lower()))
     parsed = datetime.strptime(o, '%d')
     return date(today.year, today.month, parsed.day)
   elif dots == 1:
