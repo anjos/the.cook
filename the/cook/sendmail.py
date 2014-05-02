@@ -60,6 +60,8 @@ def call(session, address, force, cc=None):
 
   user = get_current_user(session)
   path = os.path.realpath(os.path.dirname(sys.argv[0]))
+  home = os.path.realpath(os.path.expanduser('~'))
+  path = as_str(path.replace(home, '/idiap/home/' + user.name))
 
   tomorrow = datetime.date.today() + datetime.timedelta(days=1)
   if (lunch.date != tomorrow) and not force:
