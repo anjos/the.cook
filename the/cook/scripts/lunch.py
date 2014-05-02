@@ -61,11 +61,17 @@ Examples:
 
     $ %(prog)s mine
 
-  For help, type:
+  To change a subscription (i.e. add more people), first unsubscribe and then
+  re-subscribe with the correct number of parties you wish to vouch for:
+
+    $ %(prog)s remove tuesday
+    $ %(prog)s add tuesday --persons=2
+
+  For help and other command options type:
 
     $ %(prog)s --help
 
-  For the program version, type:
+  For the program version type:
 
     $ %(prog)s --version
 """
