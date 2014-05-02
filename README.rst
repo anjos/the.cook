@@ -47,9 +47,9 @@ management tasks:
   * Add a new menu for a specific date (``add``)
   * Remove a menu for a specific date (``remove``)
   * List past subscriptions and menus (``list``)
-  * Send a reminder for subscription (``reminder``)
+  * Send a call for subscription (``call``)
   * Send a PDF report to the Vatel Restaurant (``report``)
-  * Send a call for subscribers of the day lunch (``call``)
+  * Send a reminder for subscribers of the day lunch (``remind``)
 
 You can use the flag ``--help`` on both utilities to see more options.
 
