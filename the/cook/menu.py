@@ -128,7 +128,7 @@ def lunches_in_range(session, start, end):
 def subscriptions_in_range(session, username, start, end):
   """Returns all available subscriptions in the (start, end) range of dates"""
 
-  return session.query(Subscription).join(Lunch).filter(Lunch.date >= start, Lunch.date <= end, User.name == username).distinct(Subscription.date).order_by(Subscription.date)
+  return session.query(Subscription).join(Lunch).join((User, User.id == Subscription.user_id)).filter(Lunch.date >= start, Lunch.date <= end, User.name == username).distinct(Subscription.date).order_by(Subscription.date)
 
 def unsubscribe(session, date):
   """Unsubscribes the person from the lunch"""
