@@ -147,7 +147,7 @@ def unsubscribe(session, date):
       Subscription.user_id == user.id
       ).first()
   if subscribed is None:
-    logging.error("User `%s' is not subscribed for lunch `%s'" % (user.name, lunch))
+    logging.error("User `%s' is not subscribed for lunch at `%s'" % (user.name, format_date(lunch.date)))
   else:
     session.delete(subscribed)
     logging.info("Deleted `%s'..." % subscribed)
