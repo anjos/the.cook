@@ -149,10 +149,9 @@ def main(argv=None):
   arguments = s.validate(arguments)
 
   if arguments['--dbfile'] is None:
-    arguments['--dbfile'] = __import__('pkg_resources').resource_filename(
-        __name__,
-        'thecook.sql3'
-        )
+    from pkg_resources import resource_filename
+    from .. import data
+    arguments['--dbfile'] = resource_filename(data.__name__, 'thecook.sql3')
 
   from ..models import create, connect
   from ..menu import add, remove, lunch_list, user_list, \

@@ -104,10 +104,9 @@ def main(argv=None):
 
   arguments = s.validate(arguments)
 
-  dbfile = __import__('pkg_resources').resource_filename(
-        __name__,
-        'thecook.sql3'
-        )
+  from pkg_resources import resource_filename
+  from .. import data
+  dbfile = resource_filename(data.__name__, 'thecook.sql3')
 
   today = datetime.datetime.today()
 
