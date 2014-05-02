@@ -125,6 +125,11 @@ def lunches_in_range(session, start, end):
 
   return session.query(Lunch).filter(Lunch.date >= start, Lunch.date <= end).order_by(Lunch.date)
 
+def lunches_in_range_from_user(session, username, start, end):
+  """Returns all available lunches in the (start, end) range of dates"""
+
+  return session.query(Subscription).filter(User.name == username, Lunch.date >= start, Lunch.date <= end).distinct(Subscription.date).order_by(Subscription.date)
+
 def unsubscribe(session, date):
   """Unsubscribes the person from the lunch"""
 
@@ -142,7 +147,7 @@ def unsubscribe(session, date):
       Subscription.user_id == user.id
       ).first()
   if subscribed is None:
-    logging.error("User `%s' is not subscribed for lunch `%s'" % (user, lunch))
+    logging.error("User `%s' is not subscribed for lunch `%s'" % (user.name, lunch))
   else:
     session.delete(subscribed)
     logging.info("Deleted `%s'..." % subscribed)
@@ -175,7 +180,7 @@ def subscribe(session, date, persons):
         (user.name, format_date(lunch.date)))
     return subscribed
 
-def list_entries(session, start, end, long_desc):
+def lunch_list(session, start, end, long_desc):
   """List all existing entries in the system, matching a range"""
 
   lunches = lunches_in_range(session, start, end)
@@ -194,5 +199,24 @@ def list_entries(session, start, end, long_desc):
       for s in l.subscriptions:
         retval.append("  - %s: %d person(s)" % \
             (s.user.name_and_email(), s.persons))
+
+  return retval
+
+def user_list(session, username, start, end, long_desc):
+  """List all existing entries in the system for a given user, matching a range"""
+
+  lunches = lunches_in_range_from_user(session, username, start, end)
+
+  if not lunches:
+    logging.error("Cannot find subscribed lunches for user `%s' in range `%s' until `%s'", username, format_date(start), format_date(end))
+    return
+
+  retval = ["User `%s' subscribed to the following lunches:", ""]
+  for l in lunches:
+    if long_desc:
+      retval.append("  - [%s] %s, %d total subscriber(s)" % \
+          (format_date(l.date), l.menu_english, l.total_subscribers()))
+    else:
+      retval.append("  - %s" % (format_date(l.date)))
 
   return retval

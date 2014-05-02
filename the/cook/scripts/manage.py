@@ -10,6 +10,7 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] add <date> <menu>
   %(prog)s [--dbfile=<s>] [-v ...] remove [--force] <date>
   %(prog)s [--dbfile=<s>] [-v ...] list [--long] [<range>]
+  %(prog)s [--dbfile=<s>] [-v ...] userlist [--long] [<range>] <username>
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
   %(prog)s [--dbfile=<s>] [-v ...] unsubscribe [<date>]
   %(prog)s [--dbfile=<s>] [-v ...] call [--force] [<email>]...
@@ -20,22 +21,26 @@ Usage:
 
 
 Arguments:
-  <date>   The date a certain menu is concerned with. Dates must have the
-           format 'dd.mm.yy'. If the date is not specified, it is assumed to
-           refer to the next viable subscribeable lunch. You can use keywords
-           like 'next' to refer to the next possible lunch, 'today' to refer to
-           today and 'tomorrow', to refer to the day after today.
-  <range>  A date range for listing menu entries and subscribers. The range
-           should be formatted like <start-date>..<end-date>. <start-date> may
-           be suppressed, in which case you mean from today. If <end-date> is
-           not provided, it means all entries from the <start-date>.
-  <menu>   The menu to be added to a certain date. Wrap the menu in quotes. You
-           may use accents if required. For example: "menu en français (english
-           translation)"
-  <email>  The e-mail where to send reports or reminders. Two formats are
-           allowed "user@example.com" or "User <user@example.com>". If an
-           e-mail is not passed on commands that require such, then output is
-           just printed to the screen.
+  <date>      The date a certain menu is concerned with. Dates must have the
+              format 'dd.mm.yy'. If the date is not specified, it is assumed to
+              refer to the next viable subscribeable lunch. You can use
+              keywords like 'next' to refer to the next possible lunch, 'today'
+              to refer to today and 'tomorrow', to refer to the day after
+              today.
+  <range>     A date range for listing menu entries and subscribers. The range
+              should be formatted like <start-date>..<end-date>. <start-date>
+              may be suppressed, in which case you mean from today. If
+              <end-date> is not provided, it means all entries from the
+              <start-date>.
+  <menu>      The menu to be added to a certain date. Wrap the menu in quotes.
+              You may use accents if required. For example: "menu en français
+              (english translation)"
+  <email>     The e-mail where to send reports or reminders. Two formats are
+              allowed "user@example.com" or "User <user@example.com>". If an
+              e-mail is not passed on commands that require such, then output
+              is just printed to the screen.
+  <username>  Refers to the login name of the user at the Idiap system. For
+              example 'ksmith' or 'jdoe'.
 
 
 Options:
@@ -63,6 +68,7 @@ Commands:
   add          Adds a new menu for a specific date
   remove       Removes the menu entry for that date
   list         Lists past and future menus, with subscribers
+  userlist     Lists user subscriptions, within a certain date range
   subscribe    Subscribes the user to one of the next lunches
   unsubscribe  Unsubscribes the user from one of the next lunches
   call         Calls idiapers for lunch subscription, with the menu
@@ -116,6 +122,7 @@ def main(argv=None):
     'add': object, #ignore
     'remove': object, #ignore
     'list': object, #ignore
+    'userlist': object, #ignore
     'subscribe': object, #ignore
     'unsubscribe': object, #ignore
     'remind': object, #ignore
@@ -125,6 +132,7 @@ def main(argv=None):
     '<range>': schema.Use(validate_range),
     '<menu>': schema.Or(None, schema.Use(validate_menu)),
     '<email>': object, #ignore
+    '<username>': object, #ignore
     '--help'    : object, #ignore
     '--version' : object, #ignore
     '--long' : object, #ignore
@@ -148,7 +156,7 @@ def main(argv=None):
         )
 
   from ..models import create, connect
-  from ..menu import add, remove, list_entries, subscribe, unsubscribe
+  from ..menu import add, remove, lunch_list, user_list, subscribe, unsubscribe
   from ..sendmail import remind, report, call
 
   if arguments['init']:
@@ -162,7 +170,12 @@ def main(argv=None):
     remove(session, arguments['<date>'], arguments['--force'])
   elif arguments['list']:
     session = connect(arguments['--dbfile'])
-    to_print = list_entries(session,
+    to_print = lunch_list(session,
+        arguments['<range>'][0], arguments['<range>'][1], arguments['--long'])
+    for k in to_print: print(k)
+  elif arguments['userlist']:
+    session = connect(arguments['--dbfile'])
+    to_print = user_list(session, arguments['<username>'],
         arguments['<range>'][0], arguments['<range>'][1], arguments['--long'])
     for k in to_print: print(k)
   elif arguments['subscribe']:

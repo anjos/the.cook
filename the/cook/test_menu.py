@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 import six
 
 from .menu import add, remove, lunches_in_range, subscribe, unsubscribe, \
-    get_current_user, lunch_at_date
+    get_current_user, lunch_at_date, lunches_in_range_from_user
 from .models import connect, Base, User, Lunch, Subscription
 
 today = datetime.date.today()
@@ -179,3 +179,14 @@ def test_remove():
   lunch = remove(session, in3days, force=False) #should fail
   assert lunch is None
   nose.tools.eq_(lunches.count(), 1)
+
+@nose.tools.with_setup(setup_lunches_and_subs)
+def test_user_list():
+
+  user = get_current_user(session)
+  lunches = lunches_in_range_from_user(session, user.name, today, datetime.date.max)
+  assert lunches.count() == 2
+
+  sub = unsubscribe(session, tomorrow) #unsubscribe from the next lunch
+  lunches = lunches_in_range_from_user(session, user.name, today, datetime.date.max)
+  assert lunches.count() == 1
