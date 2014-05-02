@@ -59,7 +59,7 @@ def call(session, address, force, cc=None):
     return False
 
   user = get_current_user(session)
-  path = os.path.dirname(sys.argv[0])
+  path = os.path.realpath(os.path.dirname(sys.argv[0]))
 
   tomorrow = datetime.date.today() + datetime.timedelta(days=1)
   if (lunch.date != tomorrow) and not force:
@@ -77,12 +77,12 @@ def call(session, address, force, cc=None):
       "To subscribe to this lunch, execute the following command on a Linux",
       "workstation at Idiap:",
       "",
-      "%s/lunch subscribe" % path,
+      "%s/lunch add" % path,
       "",
       "Do this **before 18h00 of today** to be counted in! People that subscribe",
       "will be reminded of their subscription on the day of the lunch at ~11h30.",
       "",
-      "For more options (including checking subscriptions), use:",
+      "For more options (including unsubscription), use:",
       "",
       "%s/lunch --help" % path,
       "",
