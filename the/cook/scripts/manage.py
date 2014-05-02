@@ -103,7 +103,6 @@ import os
 import sys
 import docopt
 import schema
-import datetime
 
 from ..schema import validate_date, validate_range, validate_menu
 
@@ -187,7 +186,7 @@ def main(argv=None):
     subscribe(session, arguments['<date>'], arguments['--persons'])
   elif arguments['unsubscribe']:
     session = connect(arguments['--dbfile'])
-    subscribe(session, arguments['<date>'])
+    unsubscribe(session, arguments['<date>'])
   elif arguments['call']:
     session = connect(arguments['--dbfile'])
     call(session, arguments['<email>'], arguments['--force'])
