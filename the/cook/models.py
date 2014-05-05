@@ -62,7 +62,7 @@ class User(Base):
   def fullname(self):
 
     try:
-      data = backquote(['getent', 'passwd', self.name]).split(':')[4]
+      data = backquote(['getent', 'passwd', self.name]).split(b':')[4]
     except OSError as e:
       logging.error(e)
       return six.u('Joe Doe')
