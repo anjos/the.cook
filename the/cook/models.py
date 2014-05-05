@@ -48,7 +48,8 @@ class User(Base):
   def phone(self):
 
     try:
-      data = backquote(['tel', self.name]).split('\n')[1]
+      tel = '/idiap/resource/software/scripts/tel'
+      data = backquote([tel, self.name]).split('\n')[1]
     except OSError as e:
       logging.error(e)
       return '+41277217XXX'
@@ -61,11 +62,11 @@ class User(Base):
   def fullname(self):
 
     try:
-      data = backquote(['tel', self.name]).split('\n')[1]
+      data = backquote(['getent', 'passwd', self.name]).split(':')[4]
     except OSError as e:
       logging.error(e)
       return six.u('Joe Doe')
-    return as_unicode(' '.join(data.split()[:-1]).strip())
+    return as_unicode(data)
 
   def name_and_email(self):
 
