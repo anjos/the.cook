@@ -135,12 +135,18 @@ def main(argv=None):
   elif arguments['list']:
     session = connect(dbfile)
     to_print = lunch_list(session, today, datetime.date.max, long_desc=True)
-    for k in to_print: print(k)
+    if not to_print:
+      print("No lunches programmed as of this time")
+    else:
+      for k in to_print: print(k)
   elif arguments['mine']:
     session = connect(dbfile)
     user = get_current_user(session)
     to_print = user_list(session, user.name, today, datetime.date.max, long_desc=True)
-    for k in to_print: print(k)
+    if len(to_print) == 1:
+      print("User `%s' is not registered to any upcoming lunches" % user.name)
+    else:
+      for k in to_print: print(k)
   else:
     raise NotImplementedError("unknown command")
 
