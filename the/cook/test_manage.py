@@ -148,7 +148,7 @@ def test_add_in3days_with_call():
   cmdline = (
       '--dbfile=%s' % dbfile.name,
       'call',
-      in3days,
+      '--date=%s'% in3days,
       )
   assert main(cmdline) == 0
 
