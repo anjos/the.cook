@@ -135,6 +135,14 @@ def test_add_in3days():
       )
   assert main(cmdline) == 0
 
+def test_userlist():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'userlist',
+      )
+  assert main(cmdline) == 0
+
 def test_remind_fails():
 
   cmdline = (

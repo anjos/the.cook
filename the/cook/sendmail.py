@@ -45,15 +45,23 @@ def sendmail(author, to, subject, contents, cc=None):
   msg = MIMEText('\n'.join(contents), 'plain', 'utf-8')
 
   msg['From'] = as_str(author.name_and_email())
-  msg['To']   = ', '.join(to)
+  if to: msg['To']   = ', '.join(to)
   msg['Subject'] = as_str(subject)
   if cc: msg['Cc'] = ', '.join(cc)
 
-  s = smtplib.SMTP_SSL('smtp.idiap.ch', 465)
-  recipients = to
+  recipients = []
+  if to: recipients += to
   if cc: recipients += cc
-  s.sendmail(author.name_and_email(), recipients, msg.as_string())
-  s.quit()
+
+  if to:
+    s = smtplib.SMTP_SSL('smtp.idiap.ch', 465)
+    s.sendmail(author.name_and_email(), recipients, msg.as_string())
+    s.quit()
+
+  else:
+    #emulate
+    print(msg)
+    print('\n'.join(contents))
 
   logging.info('E-mail sent for %d recipients' % len(recipients))
 
@@ -116,15 +124,7 @@ def call(session, address, force, cc=None):
 
   subject = "[food] [%s] %s" % (format_date(lunch.date), lunch.menu_french)
 
-  if not address:
-    print("From: %s" % user.name_and_email())
-    print("Subject: %s" % subject)
-    if cc: print("Cc: %s" % ", ".join(cc))
-    print("")
-    for l in message: print(l)
-
-  else:
-    sendmail(user, address, subject, message, cc)
+  sendmail(user, address, subject, message, cc)
 
 def in_french(func):
   """Decorator that sets the french locale so dates are printed right"""
@@ -187,15 +187,7 @@ def report(session, address, force, cc=None):
 
   subject = "[Idiap] Inscription consolidé pour le repas du %s" % format_date(lunch.date)
 
-  if not address:
-    print("From: %s" % user.name_and_email())
-    print("Subject: %s" % subject)
-    if cc: print("Cc: %s" % ", ".join(cc))
-    print("")
-    for l in message: print(l)
-
-  else:
-    sendmail(user, address, subject, message, cc)
+  sendmail(user, address, subject, message, cc)
 
 def remind(session, dry_run, force, cc=None):
   "Sends a call for subscribes of the day lunch"
@@ -252,12 +244,9 @@ def remind(session, dry_run, force, cc=None):
   subject = "[food] [reminder] [%s] %s" % (format_date(lunch.date), as_str(lunch.menu_french))
 
   if dry_run:
-    print("From: %s" % user.name_and_email())
-    print("Subject: %s" % subject)
-    if cc: print("Cc: %s" % ", ".join(cc))
-    print("")
-    for l in message: print(l)
+    address = None
 
   else:
     address = [as_str(k.user.name_and_email()) for k in lunch.subscriptions]
-    sendmail(user, address, subject, message, cc)
+
+  sendmail(user, address, subject, message, cc)
