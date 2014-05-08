@@ -21,6 +21,14 @@ SIGNATURE = [
     "http://github.com/anjos/the.cook",
     ]
 
+SIGNATURE_FRENCH = [
+    "",
+    "--",
+    "Ce couriel a eté auto-généré par le logiciel `the.cook'",
+    "Pour des questions, bugs ou d'autre, SVP consulter:",
+    "http://github.com/anjos/the.cook",
+    ]
+
 def sendmail(author, to, subject, contents, cc=None):
   """Sends an e-mail using the Idiap SMTP server
 
@@ -161,7 +169,7 @@ def report(session, address, force, cc=None):
       ]
 
   for s in lunch.subscriptions:
-    message.append("  - %s (%s) <%s>: %d personne(s) [CHF %d.-]" % \
+    message.append("  - %s (%s) <%s>: %d personne(s) [CHF %d.-] Payé [  ]" % \
         (s.user.fullname(), s.user.phone(), s.user.email(), s.persons,
           10*s.persons))
     message[-1] = as_str(message[-1])
@@ -172,10 +180,10 @@ def report(session, address, force, cc=None):
       "",
       "Merci de nous confirmer la bonne récéption de ce couriel,",
       "",
-      "Yours faithfully, The Idiap Lunch Team.",
+      "Cordialement, The Idiap Lunch Team.",
       ]
 
-  message += SIGNATURE
+  message += SIGNATURE_FRENCH
 
   subject = "[Idiap] Inscription consolidé pour le repas du %s" % format_date(lunch.date)
 
