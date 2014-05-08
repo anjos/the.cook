@@ -168,13 +168,20 @@ def main(argv=None):
     lunch = add(session, arguments['<date>'],
         arguments['<menu>'][0], arguments['<menu>'][1])
     if lunch:
+      print("Added lunch `%s (%s)' to `%s'" % \
+          (lunch.menu_french, lunch.menu_english,
+            lunch.date.strftime("%A, %d.%m.%y")))
       print("To announce this lunch, run `%s call --date=%s misc@idiap.ch'" % \
           (sys.argv[0], lunch.date.strftime('%d.%m.%y')))
       print("To remove this lunch, run `%s remove %s'" % \
           (sys.argv[0], lunch.date.strftime('%d.%m.%y')))
   elif arguments['remove']:
     session = connect(arguments['--dbfile'])
-    remove(session, arguments['<date>'], arguments['--force'])
+    lunch = remove(session, arguments['<date>'], arguments['--force'])
+    if lunch:
+      print("Removed lunch `%s (%s)' from `%s'" % \
+          (lunch.menu_french, lunch.menu_english,
+            lunch.date.strftime("%A, %d.%m.%y")))
   elif arguments['list']:
     session = connect(arguments['--dbfile'])
     to_print = lunch_list(session,
