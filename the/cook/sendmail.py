@@ -100,7 +100,7 @@ def call(session, address, date=None, cc=None):
       "To subscribe to this lunch, execute the following command on a Linux",
       "workstation at Idiap:",
       "",
-      "%s/lunch add" % path,
+      "%s/lunch add %s" % (path, lunch.date.strftime('%d.%m.%y')),
       "",
       "Do this **before 18h00 of %s** to be counted in!" % relative_date,
       "",
