@@ -11,7 +11,7 @@ import six
 import datetime
 import logging
 from .models import format_date, as_str, as_unicode
-from .menu import get_current_user, next_lunch
+from .menu import get_current_user, lunch_at_date, next_lunch
 
 SIGNATURE = [
     "",
@@ -65,13 +65,13 @@ def sendmail(author, to, subject, contents, cc=None):
 
   logging.info('E-mail sent for %d recipients' % len(recipients))
 
-def call(session, address, force, cc=None):
+def call(session, address, date=datetime.date.today() + datetime.timedelta(days=1), cc=None):
   "Sends a reminder for lunch subscription, with the menu"
 
-  lunch = next_lunch(session)
+  lunch = lunch_at_date(session, date)
 
   if lunch is None:
-    logging.error("There are no further lunches planned as of today, %s" % format_date(datetime.datetime.now()))
+    logging.error("There is no lunch planned for, %s" % format_date(date))
     return False
 
   user = get_current_user(session)
@@ -79,15 +79,17 @@ def call(session, address, force, cc=None):
   home = os.path.realpath(os.path.expanduser('~'))
   path = as_str(path.replace(home, '/idiap/home/' + user.name))
 
-  tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-  if (lunch.date != tomorrow) and not force:
-    logging.error("There is no lunch scheduled for tomorrow, as of today, %s" % format_date(tomorrow))
-    return False
+  if lunch.date == (datetime.date.today() + datetime.timedelta(days=1)):
+    relative_date = 'TODAY'
+  else:
+    relative_date = format_date(lunch.date - datetime.timedelta(days=1))
 
   message = [
       "Hello, next %s, the Vatel Restaurant will organise" % \
           format_date(lunch.date),
-      "lunch for all Idiapers that subscribed by today 18h00. The menu is:",
+      "lunch for all Idiapers that subscribed by %s, 18h00." % relative_date,
+      "",
+      "The menu is:",
       "",
       "Français: %s" % as_str(lunch.menu_french),
       "English: %s" % as_str(lunch.menu_english),
@@ -97,7 +99,7 @@ def call(session, address, force, cc=None):
       "",
       "%s/lunch add" % path,
       "",
-      "Do this **before 18h00 of today** to be counted in! People that subscribe",
+      "Do this **before 18h00 of %s** to be counted in! People that subscribe" % relative_date,
       "will be reminded of their subscription on the day of the lunch at ~11h30.",
       "",
       "For more options (including unsubscription), use:",

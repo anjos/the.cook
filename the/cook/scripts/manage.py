@@ -13,7 +13,7 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] userlist [--long] [<range>] [<username>]
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
   %(prog)s [--dbfile=<s>] [-v ...] unsubscribe [<date>]
-  %(prog)s [--dbfile=<s>] [-v ...] call [--force] [<email>]...
+  %(prog)s [--dbfile=<s>] [-v ...] call [<date>] [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] report [--force] [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] remind [--force] [--dry-run]
   %(prog)s (-h | --help)
@@ -65,7 +65,7 @@ Options:
 
 Commands:
   init         Initializes the current repository for menus and subscribers
-  add          Adds a new menu for a specific date
+  add          Adds a new menu for a specific date, sends a call e-mail
   remove       Removes the menu entry for that date
   list         Lists past and future menus, with subscribers
   userlist     Lists user subscriptions, within a certain date range
@@ -162,8 +162,7 @@ def main(argv=None):
     create(arguments['--dbfile'], arguments['--recreate'])
   elif arguments['add']:
     session = connect(arguments['--dbfile'])
-    add(session, arguments['<date>'],
-        arguments['<menu>'][0], arguments['<menu>'][1])
+    add(session, arguments['<date>'], arguments['<menu>'][0], arguments['<menu>'][1])
   elif arguments['remove']:
     session = connect(arguments['--dbfile'])
     remove(session, arguments['<date>'], arguments['--force'])
@@ -188,7 +187,7 @@ def main(argv=None):
     unsubscribe(session, arguments['<date>'])
   elif arguments['call']:
     session = connect(arguments['--dbfile'])
-    call(session, arguments['<email>'], arguments['--force'])
+    call(session, arguments['<email>'], arguments['<date>'])
   elif arguments['report']:
     session = connect(arguments['--dbfile'])
     report(session, arguments['<email>'], arguments['--force'])

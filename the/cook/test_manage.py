@@ -135,6 +135,23 @@ def test_add_in3days():
       )
   assert main(cmdline) == 0
 
+def test_add_in3days_with_call():
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'add',
+      in3days,
+      'Magret de Canard et pâtes (Duck breast with pasta)',
+      )
+  assert main(cmdline) == 0
+
+  cmdline = (
+      '--dbfile=%s' % dbfile.name,
+      'call',
+      in3days,
+      )
+  assert main(cmdline) == 0
+
 def test_userlist():
 
   cmdline = (
