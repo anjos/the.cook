@@ -13,7 +13,7 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] userlist [--long] [<range>] [<username>]
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
   %(prog)s [--dbfile=<s>] [-v ...] unsubscribe [<date>]
-  %(prog)s [--dbfile=<s>] [-v ...] call [<date>] [<email>]...
+  %(prog)s [--dbfile=<s>] [-v ...] call [--date=<date>] [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] report [--force] [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] remind [--force] [--dry-run]
   %(prog)s (-h | --help)
@@ -52,6 +52,8 @@ Options:
                     and create a brand new one in place
   -d --dbfile=<s>   Use a different database file then the default, package
                     bound file. This is useful for testing purposes.
+  -D --date=<date>  Some commands take the date as an optional parameter. Same
+                    parsing rules apply for this field than for <date>.
   -p --persons=<n>  If you'd like to subscribe (and vouche) for more than one
                     person, specify on this field how many. You will be
                     responsible for paying for those persons at the Vatel
@@ -137,6 +139,7 @@ def main(argv=None):
     '--long' : object, #ignore
     '--recreate': object, #ignore
     '--dbfile': object, #ignore
+    '--date': schema.Or(None, schema.Use(validate_date)),
     '--persons': schema.And(schema.Use(int), lambda n: n > 0),
     '--dry-run': object, #ignore
     '--force': object, #ignore
@@ -162,7 +165,13 @@ def main(argv=None):
     create(arguments['--dbfile'], arguments['--recreate'])
   elif arguments['add']:
     session = connect(arguments['--dbfile'])
-    add(session, arguments['<date>'], arguments['<menu>'][0], arguments['<menu>'][1])
+    lunch = add(session, arguments['<date>'],
+        arguments['<menu>'][0], arguments['<menu>'][1])
+    if lunch:
+      print("To announce this lunch, run `%s call --date=%s misc@idiap.ch'" % \
+          (sys.argv[0], lunch.date.strftime('%d.%m.%y')))
+      print("To remove this lunch, run `%s remove %s'" % \
+          (sys.argv[0], lunch.date.strftime('%d.%m.%y')))
   elif arguments['remove']:
     session = connect(arguments['--dbfile'])
     remove(session, arguments['<date>'], arguments['--force'])
@@ -187,7 +196,7 @@ def main(argv=None):
     unsubscribe(session, arguments['<date>'])
   elif arguments['call']:
     session = connect(arguments['--dbfile'])
-    call(session, arguments['<email>'], arguments['<date>'])
+    call(session, arguments['<email>'], arguments['--date'])
   elif arguments['report']:
     session = connect(arguments['--dbfile'])
     report(session, arguments['<email>'], arguments['--force'])

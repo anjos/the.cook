@@ -65,13 +65,16 @@ def sendmail(author, to, subject, contents, cc=None):
 
   logging.info('E-mail sent for %d recipients' % len(recipients))
 
-def call(session, address, date=datetime.date.today() + datetime.timedelta(days=1), cc=None):
+def call(session, address, date=None, cc=None):
   "Sends a reminder for lunch subscription, with the menu"
+
+  tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+  if date is None: date = tomorrow #try it for tomorrow then
 
   lunch = lunch_at_date(session, date)
 
   if lunch is None:
-    logging.error("There is no lunch planned for, %s" % format_date(date))
+    logging.error("There is no lunch planned for %s" % format_date(date))
     return False
 
   user = get_current_user(session)
@@ -99,8 +102,10 @@ def call(session, address, date=datetime.date.today() + datetime.timedelta(days=
       "",
       "%s/lunch add" % path,
       "",
-      "Do this **before 18h00 of %s** to be counted in! People that subscribe" % relative_date,
-      "will be reminded of their subscription on the day of the lunch at ~11h30.",
+      "Do this **before 18h00 of %s** to be counted in!" % relative_date,
+      "",
+      "People that subscribe will be reminded of their subscription",
+      "on the day of the lunch at ~11h30.",
       "",
       "For more options (including unsubscription), use:",
       "",
