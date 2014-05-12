@@ -176,7 +176,8 @@ def report(session, address, force, cc=None):
       ]
 
   for s in lunch.subscriptions:
-    message.append(u"  - %s (%s) <%s>: %d personne(s) [CHF %d.-] Payé [  ]" % \
+    message.append(
+        six.u("  - %s (%s) <%s>: %d personne(s) [CHF %d.-] Payé [  ]") % \
         (s.user.fullname(), s.user.phone(), s.user.email(), s.persons,
           10*s.persons))
     message[-1] = as_str(message[-1])
