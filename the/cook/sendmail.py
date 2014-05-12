@@ -143,7 +143,7 @@ def in_french(func):
       locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8") # french from France
       func(*args, **kwargs)
       locale.setlocale(locale.LC_TIME, current_locale) # reset
-    except:
+    except locale.Error as ex:
       pass
 
   return inner
@@ -176,7 +176,7 @@ def report(session, address, force, cc=None):
       ]
 
   for s in lunch.subscriptions:
-    message.append("  - %s (%s) <%s>: %d personne(s) [CHF %d.-] Payé [  ]" % \
+    message.append(u"  - %s (%s) <%s>: %d personne(s) [CHF %d.-] Payé [  ]" % \
         (s.user.fullname(), s.user.phone(), s.user.email(), s.persons,
           10*s.persons))
     message[-1] = as_str(message[-1])
