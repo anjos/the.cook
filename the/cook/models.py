@@ -25,10 +25,12 @@ def backquote(cmd):
 
 def format_date(date):
   """Standard date formatting"""
+  if isinstance(date, six.string_types): return date
   return date.strftime("%A, %d/%m/%Y")
 
 def format_datetime(date):
   """Standard date formatting"""
+  if isinstance(date, six.string_types): return date
   return date.strftime("%A, %d/%m/%Y at %H:%M")
 
 class User(Base):
