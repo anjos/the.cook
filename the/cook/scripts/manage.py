@@ -14,7 +14,8 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] subscribe [<date>] [--persons=<n>]
   %(prog)s [--dbfile=<s>] [-v ...] unsubscribe [<date>]
   %(prog)s [--dbfile=<s>] [-v ...] call [--date=<date>] [<email>]...
-  %(prog)s [--dbfile=<s>] [-v ...] report [--force] [<email>]...
+  %(prog)s [--dbfile=<s>] [-v ...] report [--force] [--cc=<addr> ...]
+           [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] remind [--force] [--dry-run]
   %(prog)s (-h | --help)
   %(prog)s (-V | --version)
@@ -50,6 +51,7 @@ Options:
                     displayed instead of a summarized output
   --recreate        When initializing, use this flag to remove an old database
                     and create a brand new one in place
+  -c --cc=<addr>    Send a carbon-copy e-mail to the given addresses
   -d --dbfile=<s>   Use a different database file then the default, package
                     bound file. This is useful for testing purposes.
   -D --date=<date>  Some commands take the date as an optional parameter. Same
@@ -138,6 +140,7 @@ def main(argv=None):
     '--version' : object, #ignore
     '--long' : object, #ignore
     '--recreate': object, #ignore
+    '--cc': object, #ignore
     '--dbfile': object, #ignore
     '--date': schema.Or(None, schema.Use(validate_date)),
     '--persons': schema.And(schema.Use(int), lambda n: n > 0),
@@ -206,7 +209,8 @@ def main(argv=None):
     call(session, arguments['<email>'], arguments['--date'])
   elif arguments['report']:
     session = connect(arguments['--dbfile'])
-    report(session, arguments['<email>'], arguments['--force'])
+    report(session, arguments['<email>'], arguments['--force'],
+        arguments['--cc'])
   elif arguments['remind']:
     session = connect(arguments['--dbfile'])
     remind(session, arguments['--dry-run'], arguments['--force'])
