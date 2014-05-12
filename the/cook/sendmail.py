@@ -177,10 +177,11 @@ def report(session, address, force, cc=None):
 
   for s in lunch.subscriptions:
     message.append(
-        six.u("  - %s (%s) <%s>: %d personne(s) [CHF %d.-] Payé [  ]") % \
+        six.u("  - %s (%s) <%s>: %d personne(s) [CHF %d.-]") % \
         (s.user.fullname(), s.user.phone(), s.user.email(), s.persons,
           10*s.persons))
     message[-1] = as_str(message[-1])
+    message[-1] += " Payé [ ]"
 
   message += [
       "",
@@ -193,7 +194,7 @@ def report(session, address, force, cc=None):
 
   message += SIGNATURE_FRENCH
 
-  subject = "[Idiap] Inscription consolidé pour le repas du %s" % format_date(lunch.date)
+  subject = "[Idiap] [food] Inscription consolidé pour le repas du %s" % format_date(lunch.date)
 
   sendmail(user, address, subject, message, cc)
 
