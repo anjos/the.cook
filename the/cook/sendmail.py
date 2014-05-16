@@ -112,7 +112,7 @@ def call(session, address, date=None, cc=None):
       "%s/lunch --help" % path,
       "",
       "**Payment**: Payment for your lunch should be done during the day",
-      "of the lunch. Vatel asks people to **avoid** paying during peak"
+      "of the lunch. Vatel asks people to **avoid** paying during peak",
       "restaurant working hours (i.e., between 12h00 and 13h30). The price",
       "each lunch is CHF 10.-.",
       "",
@@ -229,7 +229,7 @@ def remind(session, dry_run, force, cc=None):
   message += [
       "",
       "**Payment**: Payment for your lunch should be done during the day",
-      "of the lunch. Vatel asks people to **avoid** paying during peak"
+      "of the lunch. Vatel asks people to **avoid** paying during peak",
       "restaurant working hours (i.e., between 12h00 and 13h30). The price",
       "each lunch is CHF 10.-.",
       "",
