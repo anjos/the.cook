@@ -10,7 +10,7 @@ import six
 import getpass
 import datetime
 import logging
-from .models import User, Lunch, Subscription, format_date
+from .models import User, Lunch, Subscription, format_date, format_datetime
 
 def get_current_user(session):
 
@@ -103,7 +103,7 @@ def next_subscribeable_lunch(session):
   # it any longer because it is more than 18h00 (the list has been sent to the
   # hotel already).
   retval = query.first()
-  if retval == today or (retval.date == tomorrow and now > today_at_18):
+  if retval.date == today or (retval.date == tomorrow and now > today_at_18):
     if query.count() > 1: return query[1] #returns the next possible lunch
     else: return None
 
@@ -197,8 +197,8 @@ def lunch_list(session, start, end, long_desc):
     if long_desc:
       if len(l.subscriptions): retval[-1] += ":"
       for s in l.subscriptions:
-        retval.append("  - %s: %d person(s)" % \
-            (s.user.name_and_email(), s.persons))
+        retval.append("  - %s: %d person(s), subscribed `%s'" % \
+            (s.user.name_and_email(), s.persons, format_datetime(s.date)))
 
   return retval
 
