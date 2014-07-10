@@ -194,6 +194,11 @@ def report(session, address, force, cc=None):
 
   message += SIGNATURE_FRENCH
 
+  if cc is not None:
+    cc += [as_str(k.user.name_and_email()) for k in lunch.subscriptions]
+  else:
+    cc = [as_str(k.user.name_and_email()) for k in lunch.subscriptions]
+
   subject = "[Idiap] [food] Inscription consolidé pour le repas du %s" % format_date(lunch.date)
 
   sendmail(user, address, subject, message, cc)
