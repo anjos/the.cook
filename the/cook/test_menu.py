@@ -103,7 +103,7 @@ def test_subscribe():
   sub = subscribe(session, 'next', 1) #notice: the lunch is actually tomorrow
   assert isinstance(sub, Subscription)
 
-  lunch1 = lunch_at_date(session, tomorrow)
+  lunch1 = lunch_at_date(session, 'next')
   assert lunch1 is not None
   nose.tools.eq_(sub.lunch, lunch1)
   nose.tools.eq_(sub.user, get_current_user(session))
