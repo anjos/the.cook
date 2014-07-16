@@ -55,7 +55,11 @@ class User(Base):
     except OSError as e:
       logging.error(e)
       return '+41277217XXX'
-    return '+41277217' + data.split()[-1].strip()
+
+    if data:
+      return '+41277217' + data.split()[-1].strip()
+    else:
+      return '+41277217XXX'
 
   def email(self):
 
