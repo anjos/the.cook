@@ -265,3 +265,31 @@ def remind(session, dry_run, force, cc=None):
     address = [as_str(k.user.name_and_email()) for k in lunch.subscriptions]
 
   sendmail(user, address, subject, message, cc)
+
+@in_french
+def ask_menu(session, address, dry_run, cc=None):
+  "Sends a reminder to Vatel to send the menus for next week"
+
+  next_week = datetime.date.today() + datetime.timedelta(days=7)
+  user = get_current_user(session)
+
+  message = [
+      "Bonjour,",
+      "",
+      "Ceci est un petit rappel pour l'envoi des menus Idiap pour la",
+      "semaine %d/%d. Comme convenu, les menus doivent être envoyés" \
+          % (next_week.isocalendar()[1], next_week.year),
+      "à misc@idiap.ch.",
+      "",
+      "Au cas où les menus ont eté déjà transmis pour la semaine en",
+      "question, SVP ignorez ce rappel.",
+      "",
+      "Cordialement, The Idiap Lunch Team.",
+      ]
+
+  message += SIGNATURE_FRENCH
+
+  subject = "[Idiap] [food] Rappel: SVP envoyer les menus Idiap pour la semaine %d/%d" % (next_week.isocalendar()[1], next_week.year)
+
+  if dry_run: address = None
+  sendmail(user, address, subject, message, cc)

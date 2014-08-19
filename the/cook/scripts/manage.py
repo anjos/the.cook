@@ -16,6 +16,8 @@ Usage:
   %(prog)s [--dbfile=<s>] [-v ...] call [--date=<date>] [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] report [--force] [--cc=<addr> ...]
            [<email>]...
+  %(prog)s [--dbfile=<s>] [-v ...] askmenu [--dry-run] [--cc=<addr> ...]
+           [<email>]...
   %(prog)s [--dbfile=<s>] [-v ...] remind [--force] [--dry-run]
   %(prog)s (-h | --help)
   %(prog)s (-V | --version)
@@ -78,6 +80,7 @@ Commands:
   call         Calls idiapers for lunch subscription, with the menu
   report       Sends a PDF report to the Vatel Restaurant
   remind       Sends a reminder for subscribes of the day lunch
+  askmenu      Sends and e-mail to ask for the menus for next week
 
 
 Examples:
@@ -130,6 +133,7 @@ def main(argv=None):
     'unsubscribe': object, #ignore
     'remind': object, #ignore
     'report': object, #ignore
+    'askmenu': object, #ignore
     'call': object, #ignore
     '<date>': schema.Use(validate_date),
     '<range>': schema.Use(validate_range),
@@ -162,7 +166,7 @@ def main(argv=None):
   from ..models import create, connect
   from ..menu import add, remove, lunch_list, user_list, \
       subscribe, unsubscribe, get_current_user
-  from ..sendmail import remind, report, call
+  from ..sendmail import remind, report, call, ask_menu
 
   if arguments['init']:
     create(arguments['--dbfile'], arguments['--recreate'])
@@ -214,6 +218,10 @@ def main(argv=None):
   elif arguments['remind']:
     session = connect(arguments['--dbfile'])
     remind(session, arguments['--dry-run'], arguments['--force'])
+  elif arguments['askmenu']:
+    session = connect(arguments['--dbfile'])
+    ask_menu(session, arguments['<email>'], arguments['--dry-run'],
+        arguments['--cc'])
   else:
     raise NotImplementedError("unknown command")
 
