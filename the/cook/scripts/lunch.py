@@ -124,13 +124,13 @@ def main(argv=None):
     session = connect(dbfile)
     sub = subscribe(session, arguments['<date>'], arguments['--persons'])
     if sub:
-      print("User `%s' successfuly subscribed for lunch `%s' at `%s'" % \
+      print("User `%s' successfully subscribed for lunch `%s' at `%s'" % \
           (sub.user.name, sub.lunch.menu_english, format_date(sub.lunch.date)))
   elif arguments['remove']:
     session = connect(dbfile)
     sub = unsubscribe(session, arguments['<date>'])
     if sub:
-      print("User `%s' successfuly unsubscribed from lunch `%s' at `%s'" % \
+      print("User `%s' successfully unsubscribed from lunch `%s' at `%s'" % \
           (sub.user.name, sub.lunch.menu_english, format_date(sub.lunch.date)))
   elif arguments['list']:
     session = connect(dbfile)
